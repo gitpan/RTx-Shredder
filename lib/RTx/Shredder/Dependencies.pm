@@ -6,6 +6,16 @@ use RTx::Shredder::Constants;
 use RTx::Shredder::Dependency;
 use RT::Record;
 
+
+
+=head1 METHODS
+
+=head2 new
+
+Creates new empty collection of dependecies.
+
+=cut
+
 sub new
 {
 	my $proto = shift;
@@ -13,6 +23,20 @@ sub new
 	$self->{'list'} = [];
 	return $self;
 }
+
+=head2 _PushDependencies
+
+Put in objects into collection.
+Takes
+BaseObj - any supported object of RT::Record subclass;
+Flags - flags that describe relationship between target and base objects;
+TargetObjs - any of RT::SearchBuilder or RT::Record subclassed objects
+or array ref on list of this objects;
+Shredder - RTx::Shredder object.
+
+SeeAlso: _PushDependecy, RTx::Shredder::Dependency
+
+=cut
 
 sub _PushDependencies
 {
@@ -46,6 +70,7 @@ sub _PushDependency
 	my $self = shift;
 	my %args = (
 			BaseObj => undef,
+			Flags => undef,
 			TargetObj => undef,
 			Shredder => undef,
 			@_
@@ -65,6 +90,16 @@ sub _PushDependency
 	return;
 }
 
+=head2 Wipeout
+
+Goes thourgh collection of RTx::Shredder::Dependency objects and wipeout target object
+if it depends on base.
+Takes two optional arguments WithFlags and WithoutFlags and checks Dependency flags if
+arhuments are defined.
+
+=cut
+
+# TODO: Callback sub that check Flags instead of arguments.
 sub Wipeout
 {
 	my $self = shift;
@@ -89,8 +124,32 @@ sub Wipeout
 	return;
 }
 
+sub ValidateRelations
+{
+	my $self = shift;
+	my %args = (
+		WithFlags => undef,
+		WithoutFlags => undef,
+		@_
+	);
+
+	my $wflags = delete $args{'WithFlags'};
+	my $woflags = delete $args{'WithoutFlags'};
+	my $deps = $self->{'list'};
+
+	foreach my $d ( @{ $deps } ) {
+		next unless( $d->Flags & RELATES );
+		next if( defined( $wflags ) && !$d->Flags & $wflags );
+		next if( defined( $woflags ) && $d->Flags & $woflags );
+		my $o = $d->TargetObj;
+		$o->ValidateRelations( %args );
+	}
+
+	return;
+}
+
 sub DESTROY
 {
-	print ref($_[0]) ." gotcha\n";
+#	print ref($_[0]) ." gotcha\n";
 }
 1;

@@ -1,27 +1,29 @@
-#line 1 "inc/Module/Install/RTx.pm - /usr/lib/perl5/site_perl/5.8.3/Module/Install/RTx.pm"
+#line 1 "inc/Module/Install/RTx.pm - /usr/lib/perl5/site_perl/5.8.5/Module/Install/RTx.pm"
 # $File: //member/autrijus/Module-Install-RTx/lib/Module/Install/RTx.pm $ $Author: autrijus $
-# $Revision: #15 $ $Change: 10598 $ $DateTime: 2004/05/13 01:27:54 $ vim: expandtab shiftwidth=4
+# $Revision: #17 $ $Change: 10722 $ $DateTime: 2004/05/31 16:38:57 $ vim: expandtab shiftwidth=4
 
 package Module::Install::RTx;
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
 
-$Module::Install::RTx::VERSION = '0.07';
+$Module::Install::RTx::VERSION = '0.08';
 
 use strict;
 use FindBin;
-use File::Glob;
-use File::Basename;
+use File::Glob ();
+use File::Basename ();
 
 sub RTx {
     my ($self, $name) = @_;
     my $RTx = 'RTx';
     $RTx = $1 if $name =~ s/^(\w+)-//;
+    my $fname = $name;
+    $fname =~ s!-!/!g;
 
     $self->name("$RTx-$name")
         unless $self->name;
     $self->abstract("RT $name Extension")
         unless $self->abstract;
-    $self->version_from (-e "$name.pm" ? "$name.pm" : "lib/$RTx/$name.pm")
+    $self->version_from (-e "$name.pm" ? "$name.pm" : "lib/$RTx/$fname.pm")
         unless $self->version;
 
     my @prefixes = (qw(/opt /usr/local /home /usr /sw ));
@@ -43,12 +45,9 @@ sub RTx {
             $_ = $self->prompt("Path to your RT.pm:") or exit;
             push @INC, $_, "$_/rt3/lib", "$_/lib/rt3";
         }
-
-        package RT;
-        RT::LoadConfig();
     }
 
-    my $lib_path = dirname($INC{'RT.pm'});
+    my $lib_path = File::Basename::dirname($INC{'RT.pm'});
     print "Using RT configurations from $INC{'RT.pm'}:\n";
 
     $RT::LocalVarPath	||= $RT::VarPath;
@@ -127,20 +126,17 @@ dropdb ::
     }
 
     if (%has_etc) {
-        RTxInit();
-        $RT::SbinPath = $RT::LocalPath;
-        $RT::SbinPath =~ s/local$/sbin/;
-
+        $self->load('RTxInitDB');
         print "For first-time installation, type 'make initdb'.\n";
         my $initdb = "initdb ::\n";
         $initdb .= <<"." if $has_etc{schema};
-\t\$(NOECHO) \$(PERL) -Ilib -I"$lib_path" "$RT::SbinPath/rt-setup-database" --action=schema --datadir ./etc/ --prompt-for-dba-password --dba $RT::DatabaseUser
+\t\$(NOECHO) \$(PERL) -Ilib -I"$lib_path" -Minc::Module::Install -e"RTxInitDB(qw(schema))"
 .
         $initdb .= <<"." if $has_etc{acl};
-\t\$(NOECHO) \$(PERL) -Ilib -I"$lib_path" "$RT::SbinPath/rt-setup-database" --action=acl --datadir ./etc/ --prompt-for-dba-password --dba $RT::DatabaseUser
+\t\$(NOECHO) \$(PERL) -Ilib -I"$lib_path" -Minc::Module::Install -e"RTxInitDB(qw(acl))"
 .
         $initdb .= <<"." if $has_etc{initialdata};
-\t\$(NOECHO) \$(PERL) -Ilib -I"$lib_path" "$RT::SbinPath/rt-setup-database" --action=insert --datafile=etc/initialdata --dba $RT::DatabaseUser
+\t\$(NOECHO) \$(PERL) -Ilib -I"$lib_path" -Minc::Module::Install -e"RTxInitDB(qw(insert))"
 .
         $self->postamble("$initdb\n");
     }
@@ -159,4 +155,4 @@ sub RTxInit {
 
 __END__
 
-#line 238
+#line 234

@@ -10,7 +10,9 @@ my ($lp) = $INC{'RT.pm'} =~ /^(.*)[\\\/]/;
 my $lib_path = join( ' ', "$RT::LocalPath/lib", $lp );
 print `./configure --with-rt-lib='$lib_path'`;
 
-#build_requires		('Test::More');
-#requires();
+build_requires		('Test::More');
+requires		('Getopt::Simple');
+
+skip( qr/\.in$/ );
 
 &WriteAll;

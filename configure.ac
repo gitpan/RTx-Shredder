@@ -25,7 +25,10 @@ AC_SUBST(RT_LIB_PATH)
 
 AC_CONFIG_FILES([
 		 sbin/rtx-shredder
+		 sbin/rtx-validator
 		 lib/RTx/Shredder.pm],
-		[chmod ug=rx,o= sbin/rtx-shredder]
+		[chmod ug=rx,o= sbin/rtx-shredder
+		 chmod ug=rx,o= sbin/rtx-validator
+		]
 	       )
 AC_OUTPUT

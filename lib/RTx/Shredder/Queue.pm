@@ -5,24 +5,15 @@ use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
-sub Dependencies
+sub __DependsOn
 {
 	my $self = shift;
 	my %args = (
 			Shredder => undef,
-			Flags => DEPENDS_ON,
+			Dependencies => undef,
 			@_,
 		   );
-
-	unless( defined $self->id ) {
-		RTx::Shredder::Exception->throw('Object is not loaded');
-	}
-
-	unless( $self->id ) {
-		RTx::Shredder::Exception->throw('Global queue could not be deleted');
-	}
-
-	my $deps = RTx::Shredder::Dependencies->new();
+	my $deps = $args{'Dependencies'};
 	my $list = [];
 
 # Tickets
@@ -52,8 +43,7 @@ sub Dependencies
 			TargetObjs => $list,
 			Shredder => $args{'Shredder'}
 		);
-	return $deps;
+	return $self->SUPER::__DependsOn( %args );
 }
-
 
 1;

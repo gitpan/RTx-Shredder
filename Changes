@@ -1,5 +1,11 @@
 Revision history for Perl module RTx::Shredder
 
+v0.01
+	* fea: rtx-validator
+	* fix: nested Attachments handling if Atachment is requested for wiping directly.
+	* fea: M::I::Skip integration, no more Shredder.pm.in installing
+	* fix: tests doesn't use old installation any more
+
 v0.00_03
 	* Disribution clean up, get rid from auto* files
 	* fix: Ticket vs Links handling

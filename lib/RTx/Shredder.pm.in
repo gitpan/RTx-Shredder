@@ -77,32 +77,35 @@ perl(1), rtx-shredder
 
 =cut
 
-our $VERSION = '0.00_03';
+our $VERSION = '0.01';
 
 
 BEGIN {
-	use lib qw(@RT_LIB_PATH@);
+# I can't use 'use lib' here since it breakes tests
+# cause test suite uses old RTx::Shredder setup from
+# RT lib path
+	push @INC, qw(@RT_LIB_PATH@);
 	use RTx::Shredder::Constants;
 
-	use RT;
-	use RT::Record;
+	require RT;
+	require RT::Record;
 	require RTx::Shredder::Record;
-	use RT::Ticket;
-	use RT::Group;
-	use RT::GroupMember;
-	use RT::CachedGroupMember;
-	use RT::Transaction;
-	use RT::Attachment;
-	use RT::Principal;
-	use RT::Link;
-	use RT::TicketCustomFieldValue;
-	use RT::CustomField;
-	use RT::CustomFieldValue;
-	use RT::Scrip;
-	use RT::Queue;
-	use RT::ScripCondition;
-	use RT::ScripAction;
-	use RT::Template;
+	require RT::Ticket;
+	require RT::Group;
+	require RT::GroupMember;
+	require RT::CachedGroupMember;
+	require RT::Transaction;
+	require RT::Attachment;
+	require RT::Principal;
+	require RT::Link;
+	require RT::TicketCustomFieldValue;
+	require RT::CustomField;
+	require RT::CustomFieldValue;
+	require RT::Scrip;
+	require RT::Queue;
+	require RT::ScripCondition;
+	require RT::ScripAction;
+	require RT::Template;
 
 	require RTx::Shredder::Ticket;
 	require RTx::Shredder::Group;
@@ -237,6 +240,19 @@ sub Wipeout
 	foreach my $record( keys %{ $self->{'Cache'} } ) {
 		next if( $record->{'State'} & WIPED );
 		$record->Wipeout( Shredder => $self );
+	}
+}
+
+sub ValidateRelations
+{
+	my $self = shift;
+	my %args = (
+			@_
+		   );
+
+	foreach my $record( keys %{ $self->{'Cache'} } ) {
+		next if( $record->{'State'} & VALID );
+		$record->ValidateRelations( Shredder => $self );
 	}
 }
 

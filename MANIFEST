@@ -8,6 +8,7 @@ inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/Skip.pm
 inc/Module/Install/RTx.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
@@ -45,4 +46,6 @@ MANIFEST.SKIP
 META.yml
 sbin/rtx-shredder
 sbin/rtx-shredder.in
+sbin/rtx-validator
+sbin/rtx-validator.in
 Todo

@@ -117,7 +117,7 @@ sub Class
 
 sub DESTROY
 {
-	print ref($_[0]) ." gotcha\n";
+#	print ref($_[0]) ." gotcha\n";
 }
 
 1;

@@ -5,28 +5,60 @@ use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
-
-sub Dependencies
+sub __DependsOn
 {
 	my $self = shift;
 	my %args = (
 			Shredder => undef,
-			Flags => DEPENDS_ON,
+			Dependencies => undef,
 			@_,
 		   );
+	my $deps = $args{'Dependencies'};
+	my $list = [];
 
-	unless( $self->id ) {
-		RTx::Shredder::Exception->throw('Object is not loaded');
+	return $self->SUPER::__DependsOn( %args );
+}
+
+sub __Relates
+{
+	my $self = shift;
+	my %args = (
+			Shredder => undef,
+			Dependencies => undef,
+			@_,
+		   );
+	my $deps = $args{'Dependencies'};
+	my $list = [];
+
+# Ticket
+	my $obj = $self->TicketObj;
+	if( defined $obj->id ) {
+		push( @$list, $obj );
+	} else {
+		my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+		$self = $rec->{'Object'};
+		$rec->{'State'} |= INVALID;
+		$rec->{'Description'} = "Have no related Ticket #". $self->id ." object";
 	}
 
-	my $deps = RTx::Shredder::Dependencies->new();
-
-# No dependencies that should be deleted with record
-
-#TODO: We should export Custom Field if want export tool.
-
-	return $deps;
+# Custom Field
+	$obj = $self->CustomFieldObj;
+	if( defined $obj->id ) {
+		push( @$list, $obj );
+	} else {
+		my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+		$self = $rec->{'Object'};
+		$rec->{'State'} |= INVALID;
+		$rec->{'Description'} = "Have no related CustomField #". $self->id ." object";
+	}
+	
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => RELATES,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
+	return $self->SUPER::__Relates( %args );
 }
 
 1;
-

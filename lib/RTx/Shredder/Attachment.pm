@@ -5,24 +5,80 @@ use RTx::Shredder::Exceptions;
 use RTx::Shredder::Constants;
 use RTx::Shredder::Dependencies;
 
-
-sub Dependencies
+sub __DependsOn
 {
 	my $self = shift;
 	my %args = (
-			Flags => DEPENDS_ON,
+			Shredder => undef,
+			Dependencies => undef,
 			@_,
 		   );
+	my $deps = $args{'Dependencies'};
+	my $list = [];
 
-	unless( $self->id ) {
-		RTx::Shredder::Exception->throw('Object is not loaded');
-	}
+# Nested attachments
+	my $objs = RT::Attachments->new( $self->CurrentUser );
+	$objs->Limit(
+			FIELD => 'Parent',
+			OPERATOR        => '=',
+			VALUE           => $self->Id
+		   );
+	$objs->Limit(
+			FIELD => 'id',
+			OPERATOR        => '!=',
+			VALUE           => $self->Id
+		   );
+	push( @$list, $objs );
 
-	my $deps = RTx::Shredder::Dependencies->new();
-
-# No dependencies that should be deleted with record
-
-	return $deps;
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
+	return $self->SUPER::__DependsOn( %args );
 }
 
+sub __Relates
+{
+	my $self = shift;
+	my %args = (
+			Shredder => undef,
+			Dependencies => undef,
+			@_,
+		   );
+	my $deps = $args{'Dependencies'};
+	my $list = [];
+
+# Parent, nested parts
+	if( $self->Parent ) {
+		if( $self->ParentObj && $self->ParentId ) {
+			push( @$list, $self->ParentObj );
+		} else {
+			my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+			$self = $rec->{'Object'};
+			$rec->{'State'} |= INVALID;
+			$rec->{'Description'} = "Have no parent attachment #". $self->Parent ." object";
+		}
+	}
+
+# Transaction
+	my $obj = $self->TransactionObj;
+	if( defined $obj->id ) {
+		push( @$list, $obj );
+	} else {
+		my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+		$self = $rec->{'Object'};
+		$rec->{'State'} |= INVALID;
+		$rec->{'Description'} = "Have no related transaction #". $self->TransactionId ." object";
+	}
+	
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => RELATES,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
+	return $self->SUPER::__Relates( %args );
+}
 1;
