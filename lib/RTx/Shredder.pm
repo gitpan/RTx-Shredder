@@ -65,7 +65,7 @@ perl(1), rtx-shredder.
 
 =cut
 
-our $VERSION = '0.00_01';
+our $VERSION = '0.00_02';
 
 
 BEGIN {
@@ -82,6 +82,8 @@ BEGIN {
 	use RT::Principal;
 	use RT::Link;
 	use RT::TicketCustomFieldValue;
+	use RT::CustomField;
+	use RT::CustomFieldValue;
 
 	require RTx::Shredder::Record;
 	require RTx::Shredder::Ticket;
@@ -93,6 +95,8 @@ BEGIN {
 	require RTx::Shredder::Principal;
 	require RTx::Shredder::Link;
 	require RTx::Shredder::TicketCustomFieldValue;
+	require RTx::Shredder::CustomField;
+	require RTx::Shredder::CustomFieldValue;
 }
 
 

@@ -3,6 +3,8 @@ package RTx::Shredder::Dependency;
 use strict;
 use RTx::Shredder::Exceptions;
 
+# now it's not used at all and also would be changed
+# to bit flags constants
 our %StrengthLevels = (
 		DependBy => 0,
 		ExportWith => 1,
@@ -22,7 +24,7 @@ sub Set
 	my $self = shift;
 	my %args = (
 			BaseObj => undef,
-			Strength => 'DependOn',
+			Strength => 'DependsOn',
 			TargetObj => undef,
 			@_
 		);

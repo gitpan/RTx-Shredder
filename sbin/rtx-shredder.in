@@ -37,8 +37,20 @@ END
 }
 
 my $tickets = RT::Tickets->new( $RT::SystemUser );
+$tickets->{'allow_deleted_search'} = 1;
 $tickets->LimitStatus( VALUE => 'deleted' );
 $tickets->LimitLastUpdated( OPERATOR => '<', VALUE => "$date 00:00");
+
+unless( $tickets->Count ) {
+	print "Tickets list is empty.\n";
+	exit(0);
+} else {
+	print $tickets->Count() ."tickets would be wiped out.\n";
+	print "Are you shure? [y/N] ";
+	unless( <STDIN> =~ /^y$/i ) {
+		exit(0);
+	}
+}
 
 while( my $t = $tickets->Next ) {
 	$t->Wipeout();

@@ -1,5 +1,11 @@
 TODO list for RT Shredder extension
 
-a lot of things
+	* approvals clean ups!!!
+	* cover all RT objects
+	* write docs
+	* write full command line interface
+	* write export API
+	* discover rt2-to-rt3 migration tools and its file format
+
 
 

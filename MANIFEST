@@ -26,10 +26,13 @@ lib/RTx/Shredder/Principal.pm
 lib/RTx/Shredder/Record.pm
 lib/RTx/Shredder/Ticket.pm
 lib/RTx/Shredder/TicketCustomFieldValue.pm
+lib/RTx/Shredder/CustomField.pm
+lib/RTx/Shredder/CustomFieldValue.pm
 lib/RTx/Shredder/Transaction.pm
 lib/RTx/Shredder/Dependency.pm
 lib/RTx/Shredder/Dependencies.pm
 lib/RTx/Shredder/Exceptions.pm
+patches/search_deleted_on_explicit_requests.patch
 README
 Makefile.PL
 Build.PL
@@ -37,5 +40,4 @@ MANIFEST
 META.yml
 sbin/rtx-shredder
 sbin/rtx-shredder.in
-t/001_load.t
 Todo

@@ -37,6 +37,7 @@ sub Dependencies
 # Ticket custom field values
 	$objs = RT::TicketCustomFieldValues->new( $self->CurrentUser );
 	$objs->LimitToTicket( $self->Id() );
+	$deps->_PushDependencies( $self, 'DependsOn', $objs );
 
 #TODO: Users, Queues if we wish export tool
 

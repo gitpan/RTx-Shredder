@@ -27,5 +27,10 @@ perl Makefile.PL PREFIX=/opt/rt3
 
 Also you can RTPATH env. If RT couldn't be find in default location you would be asked.
 
+PATCH!!!
+
+Now distribution contain patch which allow search deleted tickets via API you should
+apply it to your RT instance.
+
 
 				Best regards. Ruslan.

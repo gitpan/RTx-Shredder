@@ -7,6 +7,7 @@ sub Wipeout
 	my $self = shift;
 
 	my $deps = $self->Dependencies;
+	$deps->Expand();
 
 	$deps->Wipeout();
 	$self->__Wipeout();
@@ -19,8 +20,10 @@ sub Wipeout
 sub __Wipeout
 {
 	my $self = shift;
+	my $msg = ref($self) ." #". $self->id ." deleted\n";
 
 	$self->SUPER::Delete();
+	warn $msg;
 
 	return;
 }

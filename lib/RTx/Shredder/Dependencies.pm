@@ -124,9 +124,6 @@ sub _Wipeout
 
 	while( my $d = pop @{ $deps } ) {
 		my $o = $d->TargetObj;
-		my $msg = $d->TargetClass ." #". $o->id ."deleted\n";
-		print $msg;
-		print join(", ", eval "@".$d->TargetClass."::ISA") ."\n";
 		$o->__Wipeout();
 	}
 
