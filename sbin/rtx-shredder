@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+rtx-shredder - Script which wipe out tickets from DB
+
+=head1 SYNOPSIS
+
+rtx-shredder 2004-10-03
+
+=head1 DESCRIPTION
+
+rtx-shredder - is simple script which wipe out deleted tickets
+from RT DB. As argument get date and only tickets which was last updated
+before that date would be wiped out.
+
+=head1 SEE ALSO
+
+RTx::Shredder.
+
+=cut
+
+use strict;
+use lib qw(/opt/rt3/local/lib /opt/rt3/lib);
+
+use RTx::Shredder;
+
+
+my $date = shift;
+unless( $date =~ /\d\d\d\d-\d\d-\d\d/ ) {
+	print <<END;
+	usage: $0 YYYY-MM-DD
+
+	see also `perldoc rtx-shredder` for more info.
+END
+}
+
+my $tickets = RT::Tickets->new( $RT::SystemUser );
+$tickets->LimitDeleted();
+$tickets->LimitLastUpdated( OPERATOR => '<', VALUE => "$date 00:00");
+
+while( my $t = $tickets->Next ) {
+	$t->Wipeout();
+}
+
+1;

@@ -1,0 +1,31 @@
+If this is still here it means the programmer was too lazy to write full README
+
+Install process:
+
+You should be user who has read right on RT config files and write rights on local dirs.
+It's limitation, but module have to load configs.
+
+Tests don't work at all.
+
+1) Module::Build variant
+perl Build.PL
+./Build
+./Build install
+
+2) make variant
+perl Makefile.PL
+make
+make install
+
+ENVIORMENT and ARGUMENTS
+
+You can use PREFIX arg or env value to specify RT instance
+
+PREFIX=/opt/rt3 perl Makefile.PL
+or
+perl Makefile.PL PREFIX=/opt/rt3
+
+Also you can RTPATH env. If RT couldn't be find in default location you would be asked.
+
+
+				Best regards. Ruslan.
