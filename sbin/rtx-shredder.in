@@ -10,51 +10,145 @@ rtx-shredder 2004-10-03
 
 =head1 DESCRIPTION
 
-rtx-shredder - is simple script which wipe out deleted tickets
-from RT DB. As argument get date and only tickets which was last updated
-before that date would be wiped out.
+rtx-shredder - is script that allow you to wipe out deleted tickets
+from RT DB. This script uses API that RTx::Shredder module adds to RT.
+Script can be used as example of usage of the shredder API.
+
+=head1 USAGE
+
+Scrip takes one argument - date in YYYY-MM-DD format.
+Only tickets that were updated before that date would be wiped out.
+
+=head1 OPTIONS
+
+=head2 --force
+
+Script doesn't ask any questions.
+
+=head2 --sqldump <filename>
+
+Outputs INSERT queiries into file this dump can be used to restore data
+after wiping out.
+
+=head1 NOTES
+
+=head2 Tickets list is empty
+
+RTx-Shredder distribution contains patch that should be applied to RT.
+Please read README file to learn more about this patch.
 
 =head1 SEE ALSO
 
-RTx::Shredder.
+RTx::Shredder
 
 =cut
 
 use strict;
+use warnings FATAL => 'all';
 use lib qw(@RT_LIB_PATH@);
 
-use RTx::Shredder;
-RTx::Shredder::Init();
+use Getopt::Long qw(GetOptions);
+use File::Spec;
 
+use constant PAGE_SIZE => 100;
+
+my %opt;
+sub parse_args
+{
+	my $tmp;
+	Getopt::Long::Configure( "pass_through" );
+	if( GetOptions( 'force' => \$tmp ) && $tmp ) {
+		$opt{'force'}++;
+	}
+	$tmp = undef;
+	if( GetOptions( 'sqldump=s' => \$tmp ) && $tmp ) {
+		if( -f $tmp ) {
+			unless( -w $tmp ) {
+				die "File '$tmp' exists, but read-only";
+			}
+		} elsif( !-e $tmp ) {
+			unless( File::Spec->file_name_is_absolute( $tmp ) ) {
+				$tmp = File::Spec->rel2abs( $tmp ) ;
+			}
+			#file base dir
+			my $dir = File::Spec->join( (File::Spec->splitpath( $tmp ))[0,1] );
+			unless( -e $dir && -d _) {
+				die "Base directory '$dir' for file '$tmp' doesn't exist";
+			}
+			unless( -w $dir ) {
+				die "Base directory '$dir' is not writable";
+			}
+		} else {
+			die "'$tmp' is not regular file";
+		}
+		if( -s $tmp ) {
+			print STDERR "WARNING: file '$tmp' is not empty, content would be overwriten\n";
+			exit(0) unless prompt_yN( "Do you want to proceed?" );
+		}
+		open my $fh, ">$tmp" or die "Couldn't open '$tmp' for write: $!";
+		$opt{'sqldump'} = $fh;
+	}
+	return;
+}
+
+parse_args();
 
 my $date = shift;
 unless( $date =~ /\d\d\d\d-\d\d-\d\d/ ) {
 	print <<END;
-	usage: $0 YYYY-MM-DD
+	usage: $0 [--force] [--sqldump <fpath>] YYYY-MM-DD
 
 	see also `perldoc rtx-shredder` for more info.
 END
 	exit 1;
 }
 
+use RTx::Shredder;
+RTx::Shredder::Init( %opt );
+
 my $tickets = RT::Tickets->new( $RT::SystemUser );
 $tickets->{'allow_deleted_search'} = 1;
 $tickets->LimitStatus( VALUE => 'deleted' );
 $tickets->LimitLastUpdated( OPERATOR => '<', VALUE => "$date 00:00");
 
-unless( $tickets->Count ) {
+my $total = $tickets->Count;
+
+unless( $total ) {
 	print "Tickets list is empty.\n";
 	exit(0);
 } else {
-	print $tickets->Count() ." tickets would be wiped out.\n";
-	print "Are you shure? [y/N] ";
-	unless( <STDIN> =~ /^y$/i ) {
-		exit(0);
+	print "$total tickets would be wiped out.\n";
+	unless( $opt{'force'} ) {
+		exit(0) unless prompt_yN( "Do you want to proceed?" );
 	}
 }
 
-while( my $t = $tickets->Next ) {
-	$t->Wipeout();
+unless( $opt{sqldump} ) {
+	print STDERR "WARNING: It's strongly recommended to use '--sqldump <filename>' option\n";
+	unless( $opt{'force'} ) {
+		exit(0) unless prompt_yN( "Do you want to proceed?" );
+	}
 }
 
+$tickets->RowsPerPage( PAGE_SIZE );
+
+do {
+	my $shredder = new RTx::Shredder( %opt );
+	while( my $t = $tickets->Next ) {
+		$shredder->PutObject( Object => $t );
+	}
+	$shredder->Wipeout;
+} while( $tickets->NextPage < $total );
+
 1;
+
+sub prompt_yN
+{
+	my $text = shift;
+	print "$text [y/N] ";
+	unless( <STDIN> =~ /^y$/i ) {
+		return 0;
+	}
+	return 1;
+}
+

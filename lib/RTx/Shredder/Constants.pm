@@ -23,7 +23,13 @@ Targets that has such dependency flag set should be wiped out with base object.
 =head2 WIPE_AFTER
 
 If dependency has such flag then target object should be wiped only
-after base object. Group and Principal have such relation ship.
+after base object. Group and Principal have such relationship.
+
+=head2 VARIABLE
+
+This flag is used to mark dependencies that can be resolved with changing
+value in target object. For example ticket can be created by user we can
+change this reference on other user.
 
 =head2 RELATES
 
@@ -37,6 +43,7 @@ use constant {
 	DEPENDS_ON	=> 0x000001,
 	WIPE_AFTER	=> 0x000010,
 	RELATES		=> 0x000100,
+	VARIABLE	=> 0x001000,
 };
 
 =head1 STATES

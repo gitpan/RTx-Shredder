@@ -16,6 +16,7 @@ use Getopt::Simple;
 use lib qw(/opt/rt3/local/lib /opt/rt3/lib);
 
 use RTx::Shredder;
+use RTx::Shredder::Constants;
 RTx::Shredder::Init();
 
 =head1 DESCRIPTION
@@ -87,12 +88,12 @@ unless( $object->id ) {
 my $shredder = RTx::Shredder->new;
 $object->ValidateRelations( Shredder => $shredder );
 
-foreach my $record( keys %{ $shredder->{'Cache'} } ) {
+foreach my $record( values %{ $shredder->{'Cache'} } ) {
 	next unless( $record->{'State'} & INVALID );
-	warn $record->{'Object'}->_AsString ."is invalid\n";
-	warn "\t". ref($record->{'Description'}) ?
-			join( "\n\t", $record->{'Description'} ) :
-			$record->{'Description'}
+	print STDERR $record->{'Object'}->_AsString ." is invalid\n";
+	print STDERR "\t". (ref($record->{'Description'}) ?
+			join( "\n\t", @{$record->{'Description'}} ) :
+			$record->{'Description'})
 		."\n";
 }
 
@@ -104,7 +105,8 @@ foreach my $record( keys %{ $shredder->{'Cache'} } ) {
 sub Usage
 {
 	print <<END;
-	Usage: $0 -o <ObjectName> --id <ObjectID>\n";
+	Usage: $0 -o <ObjectName> --id <ObjectID>
+
 END
 	return 1;
 }

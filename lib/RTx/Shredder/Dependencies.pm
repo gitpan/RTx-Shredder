@@ -85,7 +85,11 @@ sub _PushDependency
 	    );
 
 	if( scalar @{ $self->{'list'} } > ( $RT::DependenciesLimit || 1000 ) ) {
-		RTx::Shredder::Exception->throw( "Dependencies list overflow" );
+		RTx::Shredder::Exception->throw( <<END
+Dependecies list have reach its limit.
+See \$RT::DependenciesLimit in RTx::Shredder docs.
+END
+);
 	}
 	return;
 }

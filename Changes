@@ -1,5 +1,16 @@
 Revision history for Perl module RTx::Shredder
 
+v0.02
+	* fix: validator now works
+	* fix: Users shredding was not loaded at all
+	* fea: --force, never ask questions, for cron users
+	* fea: --sqldump, Shredder generates INSERT queries
+		that allow you restore DB after shredding
+	* inv: When delete users from groups we should delete delegated rights
+	* fix: SYNOPSYS in Shredder.pm has bad example
+	* fix: User should delete itself from GroupMembers and from Cached
+	* fix: CachedGroupMember should delete other CGMs that are 'Via' current
+	* upd: New documentation, README should be more clean
 v0.01
 	* fea: rtx-validator
 	* fix: nested Attachments handling if Atachment is requested for wiping directly.

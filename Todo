@@ -18,6 +18,8 @@ TODO list for RT Shredder extension
                 $rec->{'Description'} = "Have no related Object #". $self->id ." object";
         }
 
+	* adopt for 3.2 changes
+
 
 
 

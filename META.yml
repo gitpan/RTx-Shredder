@@ -1,11 +1,10 @@
 name: RTx-Shredder
-version: 0.01
+version: 0.01_01
 abstract: RT Shredder Extension
 author: Ruslan U. Zakirov <cubic@wildgate.miee.ru>
 license: perl
 distribution_type: module
 no_index:
   directory:
-    - sbin
     - inc
 generated_by: Module::Install version 0.35

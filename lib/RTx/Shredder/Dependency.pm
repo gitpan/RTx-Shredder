@@ -6,6 +6,7 @@ use RTx::Shredder::Exceptions;
 
 our %FlagDescs = (
 	1	=> 'depends on',
+	4	=> 'relates with',
 );
 
 
@@ -73,14 +74,12 @@ sub FlagsAsString
 
 sub BaseObj
 {
-	my $self = shift;
-	return $self->Object( Type => 'Base' );
+	return $_[0]->Object( Type => 'Base' );
 }
 
 sub TargetObj
 {
-	my $self = shift;
-	return $self->Object( Type => 'Target' );
+	return $_[0]->Object( Type => 'Target' );
 }
 
 sub Object

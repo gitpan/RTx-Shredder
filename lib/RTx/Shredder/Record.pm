@@ -18,6 +18,28 @@ sub _AsString
 	return $res;
 }
 
+=head2 _AsInsertQuery
+
+Returns INSERT query string.
+
+=cut
+
+sub _AsInsertQuery
+{
+	my $self = shift;
+
+	my $dbh = $RT::Handle->dbh;
+
+	my $res = "INSERT INTO ". $dbh->quote_identifier( $self->Table );
+	my $values = $self->{'values'};
+	$res .= "(". join( ",", map { $dbh->quote_identifier( $_ ) } sort keys %$values ) .")";
+	$res .= " VALUES";
+	$res .= "(". join( ",", map { $dbh->quote( $values->{$_} ) } sort keys %$values ) .")";
+	$res .= ";";
+
+	return $res;
+}
+
 =head2 Dependencies
 
 =cut
@@ -157,8 +179,10 @@ sub __Wipeout
 	my $self = shift;
 	my %args = ( @_ );
 	my $msg = $self->_AsString ." deleted";
+	my $insert_query = $self->_AsInsertQuery;
 
 	$self->SUPER::Delete();
+	$args{'Shredder'}->DumpSQL( Query => $insert_query );
 
 	my $rec = $args{'Shredder'}->GetRecord( Object => $self );
 	$rec->{'State'} |= WIPED;

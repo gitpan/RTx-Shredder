@@ -37,7 +37,6 @@ lib/RTx/Shredder/CustomFieldValue.pm
 lib/RTx/Shredder/Transaction.pm
 lib/RTx/Shredder/User.pm
 patches/search_deleted_on_explicit_requests.patch
-t/01use.t
 README
 Makefile.PL
 Build.PL

@@ -7,11 +7,13 @@ RTx::Shredder - Cleanup RT database
 
 =head1 SYNOPSIS
 
+  rtx-shredder --force --sqldump unshred.sql 2005-01-01
+
   use RTx::Shredder;
-  RTx::Shredder::Init();
+  RTx::Shredder::Init( force => 1 );
   my $deleted = RT::Tickets->new( $RT::SystemUser );
   $deleted->{'allow_deleted_search'} = 1;
-  $deleted->Limit( VALUE => 'deleted' );
+  $deleted->LimitStatus( VALUE => 'deleted' );
   while( my $t = $deleted->Next ) {
       $t->Wipeout;
   }
@@ -23,7 +25,21 @@ RTx::Shredder is extention to RT API which allow to delete data from database.
 =head1 USAGE
 
 RTx::Shredder is extension to RT API which add(push) methods into base RT
-classes.
+classes. If you are looking for end-user command line tool then see also
+C<rtx-shredder> script that is shipped with the distribution.
+
+=head1 CONFIGURATION
+
+=head2 $RT::DependenciesLimit
+
+Shredder stops with error if object has more then C<$RT::DependenciesLimit>
+dependencies. By default this value is 1000. For example: ticket has 1000
+transactions or transaction has 1000 attachments. This is protection
+from bugs in shredder code, but sometimes when you for example when you
+have big mail loops you may hit it. You can chage default value, in
+C<RT_SiteConfig.pm> add Set( $DependenciesLimit, new_limit );
+
+=head1 METHODS
 
 =head2 Dependencies
 
@@ -34,10 +50,18 @@ CachedGroupMember.
 
 =head1 NOTES
 
+=head2 You should patch RT
+
+RTx-Shredder distribution contains patch that should be applied to RT.
+Please read README file to learn more about this patch.
+
 =head2 Transactions support
 
 Transactions unsupported yet, so it's only save when all other
-interactions with RT DB are stopped.
+interactions with RT DB are stopped. For example if you are going to
+wipe ticket that was deleted an year ago then it's probably ok to run
+shredder on it, but if you're going to delete some actively used object
+then it's better to stop http server.
 
 =head2 Foreign keys
 
@@ -49,10 +73,10 @@ This two keys don't allow delete Tickets because of bug in MySQL
 
 =head1 BUGS
 
-=head2 rtx-shredder.in
+=head2 *.in files
 
-Module also install crappy rtx-shredder.in file, this shouldn't happen
-in future.
+When you install this distribution also useless *.in file are installed,
+this shouldn't happen in future. I didn't find good solution yet.
 
 =head2 Documentation
 
@@ -73,11 +97,11 @@ Perl distribution.
 
 =head1 SEE ALSO
 
-perl(1), rtx-shredder
+perl(1), C<rtx-shredder>
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.01_01';
 
 
 BEGIN {
@@ -88,8 +112,10 @@ BEGIN {
 	use RTx::Shredder::Constants;
 
 	require RT;
+
 	require RT::Record;
 	require RTx::Shredder::Record;
+
 	require RT::Ticket;
 	require RT::Group;
 	require RT::GroupMember;
@@ -106,29 +132,34 @@ BEGIN {
 	require RT::ScripCondition;
 	require RT::ScripAction;
 	require RT::Template;
+	require RT::User;
 
-	require RTx::Shredder::Ticket;
-	require RTx::Shredder::Group;
-	require RTx::Shredder::GroupMember;
-	require RTx::Shredder::CachedGroupMember;
-	require RTx::Shredder::Transaction;
 	require RTx::Shredder::Attachment;
-	require RTx::Shredder::Principal;
-	require RTx::Shredder::Link;
-	require RTx::Shredder::TicketCustomFieldValue;
+	require RTx::Shredder::CachedGroupMember;
 	require RTx::Shredder::CustomField;
 	require RTx::Shredder::CustomFieldValue;
-	require RTx::Shredder::Scrip;
+	require RTx::Shredder::GroupMember;
+	require RTx::Shredder::Group;
+	require RTx::Shredder::Link;
+	require RTx::Shredder::Principal;
 	require RTx::Shredder::Queue;
-	require RTx::Shredder::ScripCondition;
+	require RTx::Shredder::Scrip;
 	require RTx::Shredder::ScripAction;
+	require RTx::Shredder::ScripCondition;
 	require RTx::Shredder::Template;
+	require RTx::Shredder::TicketCustomFieldValue;
+	require RTx::Shredder::Ticket;
+	require RTx::Shredder::Transaction;
+	require RTx::Shredder::User;
 }
+
+our %opt = ();
 
 sub Init
 {
-	RT::LoadConfig;
-	RT::Init;
+	%opt = @_;
+	RT::LoadConfig();
+	RT::Init();
 }
 
 sub new
@@ -143,8 +174,10 @@ sub _Init
 {
 	my $self = shift;
 	my %args = (
+			%opt,
 			@_
 		   );
+	$self->{'opt'} = \%args;
 	$self->{'Cache'} = {};
 };
 
@@ -180,7 +213,7 @@ sub PutObject
 
 	my $obj = $args{'Object'};
 	unless( UNIVERSAL::isa( $obj, 'RT::Record' ) ) {
-		RTx::Shredder::Exception->throw( "Unsupported type ". ref $obj );
+		RTx::Shredder::Exception->throw( "Unsupported type ". (ref $obj || $obj) );
 	}
 
 	my $str = $obj->_AsString;
@@ -230,6 +263,20 @@ sub GetState
 	return $self->GetRecord( @_ )->{'State'};
 }
 
+sub DumpSQL
+{
+	my $self = shift;
+	my %args = (
+		Query => undef,
+		@_
+	);
+	return unless exists $self->{opt}->{sqldump};
+	my $fh = $self->{opt}->{sqldump};
+	print $fh $args{'Query'};
+	print $fh "\n" unless $args{'Query'} =~ /\n$/;
+	return;
+}
+
 sub Wipeout
 {
 	my $self = shift;
@@ -237,9 +284,9 @@ sub Wipeout
 			@_
 		   );
 
-	foreach my $record( keys %{ $self->{'Cache'} } ) {
+	foreach my $record( values %{ $self->{'Cache'} } ) {
 		next if( $record->{'State'} & WIPED );
-		$record->Wipeout( Shredder => $self );
+		$record->{'Object'}->Wipeout( Shredder => $self );
 	}
 }
 
@@ -250,9 +297,9 @@ sub ValidateRelations
 			@_
 		   );
 
-	foreach my $record( keys %{ $self->{'Cache'} } ) {
+	foreach my $record( values %{ $self->{'Cache'} } ) {
 		next if( $record->{'State'} & VALID );
-		$record->ValidateRelations( Shredder => $self );
+		$record->{'Object'}->ValidateRelations( Shredder => $self );
 	}
 }
 
