@@ -81,7 +81,7 @@ our $VERSION = '0.00_03';
 
 
 BEGIN {
-	use lib qw(/opt/rt3/local/lib /opt/rt3/lib);
+	use lib qw(@RT_LIB_PATH@);
 	use RTx::Shredder::Constants;
 
 	use RT;

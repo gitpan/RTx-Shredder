@@ -1,20 +1,18 @@
-If this is still here it means the programmer was too lazy to write full README
-
 Install process:
 
 You should be user who has read right on RT config files and write rights on local dirs.
-It's limitation, but module have to load configs.
-
-Tests don't work at all.
+It's limitation, but module have to load config files to proceed.
 
 1) Module::Build variant
 perl Build.PL
 ./Build
+./Build test
 ./Build install
 
 2) make variant
 perl Makefile.PL
 make
+make test
 make install
 
 ENVIORMENT and ARGUMENTS

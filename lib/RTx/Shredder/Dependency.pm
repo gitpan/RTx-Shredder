@@ -1,15 +1,13 @@
 package RTx::Shredder::Dependency;
 
 use strict;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 
-# now it's not used at all and also would be changed
-# to bit flags constants
-our %StrengthLevels = (
-		DependBy => 0,
-		ExportWith => 1,
-		DependsOn => 2,
-		);
+our %FlagDescs = (
+	1	=> 'depends on',
+);
+
 
 sub new
 {
@@ -24,19 +22,18 @@ sub Set
 	my $self = shift;
 	my %args = (
 			BaseObj => undef,
-			Strength => 'DependsOn',
+			Flags => DEPENDS_ON,
 			TargetObj => undef,
 			@_
 		);
 
 	unless( $args{'BaseObj'} && ref $args{'BaseObj'} &&
-			$args{'TargetObj'} && ref $args{'TargetObj'} &&
-			$args{'Strength'} && $StrengthLevels{ $args{'Strength'} }
+			$args{'TargetObj'} && ref $args{'TargetObj'}
 	      ) {
 		RTx::Shredder::Exception->throw("Wrong args");
 	}
 
-	$self->{'_Strength'} = $args{'Strength'};
+	$self->{'_Flags'} = $args{'Flags'};
 	$self->{'_BaseObj'} = $args{'BaseObj'};
 	$self->{'_TargetObj'} = $args{'TargetObj'};
 
@@ -48,22 +45,29 @@ sub AsString
 	my $self = shift;
 	my $res = $self->BaseClass;
 	$res .= " #". $self->BaseObj->id;
-	$res .= " ". $self->StrengthAsString;
+	$res .= " ". $self->FlagsAsString;
 	$res .= " ". $self->TargetClass;
 	$res .= " #". $self->TargetObj->id;
 	return $res;
 }
 
-sub Strength
+sub Flags
 {
 	my $self = shift;
-	return $StrengthLevels{ $self->{'_Strength'} };
+	return $self->{'_Flags'};
 }
 
-sub StrengthAsString
+sub FlagsAsString
 {
 	my $self = shift;
-	return $self->{'_Strength'};
+	my @res = ();
+	foreach ( keys %FlagDescs ) {
+		if( $self->{'_Flags'} & $_ ) {
+			push( @res, $FlagDescs{ $_ } );
+		}
+	}
+	push( @res, 'no flags' ) unless( @res );
+	return "(" . join( ',', @res ) . ")";
 }
 
 
@@ -109,6 +113,11 @@ sub Class
 		);
 	
 	return ref $self->{"_". $args{'Type'} . "Obj"};
+}
+
+sub DESTROY
+{
+	print ref($_[0]) ." gotcha\n";
 }
 
 1;

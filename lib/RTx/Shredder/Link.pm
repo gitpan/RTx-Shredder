@@ -3,6 +3,7 @@ package RT::Link;
 use strict;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
+use RTx::Shredder::Constants;
 
 
 sub Dependencies
@@ -10,7 +11,7 @@ sub Dependencies
 	my $self = shift;
 	my %args = (
 			Cached => undef,
-			Strength => 'DependsOn',
+			Flags => DEPENDS_ON,
 			@_,
 		   );
 
@@ -29,4 +30,3 @@ sub Dependencies
 }
 
 1;
-

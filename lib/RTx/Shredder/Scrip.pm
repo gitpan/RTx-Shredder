@@ -1,4 +1,4 @@
-package RT::TicketCustomFieldValue;
+package RT::Scrip;
 
 use strict;
 use RTx::Shredder::Constants;
@@ -22,8 +22,7 @@ sub Dependencies
 	my $deps = RTx::Shredder::Dependencies->new();
 
 # No dependencies that should be deleted with record
-
-#TODO: We should export Custom Field if want export tool.
+# Scrip actions and conditions should be exported in feature with it.
 
 	return $deps;
 }

@@ -1,6 +1,7 @@
 package RT::Transaction;
 
 use strict;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
@@ -8,8 +9,8 @@ sub Dependencies
 {
 	my $self = shift;
 	my %args = (
-			Cached => undef,
-			Strength => 'DependsOn',
+			Shredder => undef,
+			Flags => DEPENDS_ON,
 			@_,
 		   );
 
@@ -17,41 +18,17 @@ sub Dependencies
 		RTx::Shredder::Exception->throw('Object is not loaded');
 	}
 
-	my $deps = $args{'Cached'} || RTx::Shredder::Dependencies->new();
+	my $deps = RTx::Shredder::Dependencies->new();
 
 # Attachments
-	$deps->_PushDependencies( $self, 'DependsOn', $self->Attachments );
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $self->Attachments,
+			Shredder => $args{'Shredder'}
+		);
 
 	return $deps;
 }
 
-
-sub Wipeout
-{
-	my $self = shift;
-	my %args = (
-			@_,
-		   );
-
-
-
-
-
-	return;
-}
-
-sub _Wipeout
-{
-	my $self = shift;
-	my %args = (
-			@_,
-		   );
-
-
-
-
-	return;
-}
-
 1;
-

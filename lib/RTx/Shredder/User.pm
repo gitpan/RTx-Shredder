@@ -1,10 +1,9 @@
-package RT::Principal;
+package RT::User;
 
 use strict;
-use RTx::Shredder::Exceptions;
 use RTx::Shredder::Constants;
+use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
-
 
 sub Dependencies
 {
@@ -19,31 +18,24 @@ sub Dependencies
 		RTx::Shredder::Exception->throw('Object is not loaded');
 	}
 
-	my $deps = RTx::Shredder::Dependencies->new();
+	my $deps = $args{'Cached'} || RTx::Shredder::Dependencies->new();
 	my $list = [];
 
-# Group or User
-# Could be wiped allready
-	my $obj = $self->Object;
-	if( defined $obj->id ) {
-		push( @$list, $obj );
-	}
+# Principal
+	push( @$list, $self->PrincipalObj );
 
-# Access Control List
-	my $objs = RT::ACL->new( $self->CurrentUser );
-	$objs->Limit(
-			FIELD => 'PrincipalId',
-			OPERATOR        => '=',
-			VALUE           => $self->Id
-		   );
+# ACL equivalence group
+	my $objs = RT::Groups->new( $self->CurrentUser );
+	$objs->Limit( FIELD => 'Domain', VALUE => 'ACLEquivalence' );
+	$objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
 	push( @$list, $objs );
-
 	$deps->_PushDependencies(
 			BaseObj => $self,
 			Flags => DEPENDS_ON,
 			TargetObjs => $list,
 			Shredder => $args{'Shredder'}
 		);
+
 	return $deps;
 }
 

@@ -1,6 +1,7 @@
 package RT::Group;
 
 use strict;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
@@ -9,8 +10,8 @@ sub Dependencies
 {
 	my $self = shift;
 	my %args = (
-			Cached => undef,
-			Strength => 'DependsOn',
+			Shredder => undef,
+			Flags => DEPENDS_ON,
 			@_,
 		   );
 
@@ -18,28 +19,46 @@ sub Dependencies
 		RTx::Shredder::Exception->throw('Object is not loaded');
 	}
 
-	my $deps = $args{'Cached'} || RTx::Shredder::Dependencies->new();
+	if( $self->Domain eq 'SystemInternal' ) {
+		RTx::Shredder::Exception->throw('Couldn\'t delete system group');
+	}
+
+	my $deps = RTx::Shredder::Dependencies->new();
+	my $list = [];
+
+# User is inconsistent without own Equivalence group
+	if( $self->Domain eq 'ACLEquivalence' ) {
+		my $objs = RT::User->new($self->CurrentUser);
+		$objs->Load( $self->Instance );
+		push( @$list, $objs );
+	}
 
 # Principal
-	$deps->_PushDependencies( $self, 'DependsOn', $self->PrincipalObj );
+	$deps->_PushDependency(
+			BaseObj => $self,
+			Flags => DEPENDS_ON | WIPE_AFTER,
+			TargetObj => $self->PrincipalObj,
+			Shredder => $args{'Shredder'}
+		);
 
 # Group members records
 	my $objs = RT::GroupMembers->new( $self->CurrentUser );
 	$objs->LimitToMembersOfGroup( $self->PrincipalId );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+	push( @$list, $objs );
 
 # Group member records group belongs to
-	$objs->UnLimit();
+	$objs = RT::GroupMembers->new( $self->CurrentUser );
 	$objs->Limit(
 			VALUE => $self->PrincipalId,
 			FIELD => 'MemberId',
 			ENTRYAGGREGATOR => 'OR',
 			QUOTEVALUE => 0
 		    );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+	push( @$list, $objs );
 
 # Cached group members records
-	$deps->_PushDependencies( $self, 'DependsOn', $self->DeepMembersObj );
+	push( @$list, $self->DeepMembersObj );
+
 # Cached group member records group belongs to
 	$objs = RT::GroupMembers->new( $self->CurrentUser );
 	$objs->Limit(
@@ -48,7 +67,14 @@ sub Dependencies
 			ENTRYAGGREGATOR => 'OR',
 			QUOTEVALUE => 0
 		    );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+	push( @$list, $objs );
+
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
 
 	return $deps;
 }

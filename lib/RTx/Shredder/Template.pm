@@ -1,4 +1,4 @@
-package RT::TicketCustomFieldValue;
+package RT::Template;
 
 use strict;
 use RTx::Shredder::Constants;
@@ -22,8 +22,6 @@ sub Dependencies
 	my $deps = RTx::Shredder::Dependencies->new();
 
 # No dependencies that should be deleted with record
-
-#TODO: We should export Custom Field if want export tool.
 
 	return $deps;
 }

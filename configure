@@ -273,7 +273,7 @@ PACKAGE_VERSION='0.01'
 PACKAGE_STRING='RTx::Shredder 0.01'
 PACKAGE_BUGREPORT='cubic@wildgate.miee.ru'
 
-ac_unique_file="lib/RTx/Shredder.pm"
+ac_unique_file="lib/RTx/Shredder.pm.in"
 ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS RT_LIB_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
@@ -1260,7 +1260,7 @@ fi;
 
 # Checks for library functions.
 
-          ac_config_files="$ac_config_files sbin/rtx-shredder"
+                    ac_config_files="$ac_config_files sbin/rtx-shredder lib/RTx/Shredder.pm"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -1813,6 +1813,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "sbin/rtx-shredder" ) CONFIG_FILES="$CONFIG_FILES sbin/rtx-shredder" ;;
+  "lib/RTx/Shredder.pm" ) CONFIG_FILES="$CONFIG_FILES lib/RTx/Shredder.pm" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
@@ -2133,6 +2134,8 @@ s,@abs_top_builddir@,$ac_abs_top_builddir,;t t
   # Run the commands associated with the file.
   case $ac_file in
     sbin/rtx-shredder ) chmod ug=rx,o= sbin/rtx-shredder
+	        ;;
+    lib/RTx/Shredder.pm ) chmod ug=rx,o= sbin/rtx-shredder
 	        ;;
   esac
 done

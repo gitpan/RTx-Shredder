@@ -2,6 +2,7 @@ package RTx::Shredder::Dependencies;
 
 use strict;
 use RTx::Shredder::Exceptions;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Dependency;
 use RT::Record;
 
@@ -13,65 +14,25 @@ sub new
 	return $self;
 }
 
-sub Lookup
-{
-	my $self = shift;
-	my %args = (
-			Object => undef,
-			Strength => 'DependOn',
-			@_
-		   );
-	my $list = $self->{'list'} || [];
-	my $o = $args{'Object'};
-	foreach my $d( @{ $list } ) {
-		next unless( $d->TargetClass eq ref $o );
-		next unless( $d->TargetObj->id eq $o->id );
-		next if( $d->StrengthAsString ne $args{'Strength'} );
-
-		return $d;
-	}
-	return undef;
-}
-
-sub Expand
-{
-	my $self = shift;
-	my %args = (
-			Strength => 'DependsOn',
-			@_,
-		   );
-
-	my $deps = $self->{'list'};
-	foreach my $d( @{ $deps } ) {
-		next unless( $d->Strength > $args{'Strength'} );
-		$d->TargetObj->Dependencies( Cached => $self, Strength => $args{'Strength'} );
-	}
-	$self->{'expanded'} = 1;
-	return;
-}
-
 sub _PushDependencies
 {
 	my $self = shift;
-	my $base = shift;
-	my $strength = shift;
-	my ($targets) = @_;
-	if( scalar @_ > 1 ) {
-		$targets = [ @_ ];
-	}
-	unless( ref $targets ) {
-		RTx::Shredder::Exception->throw( 'Not references' );
-	}
-
-	if( ref( $targets ) =~ /^RT::.*/ && $targets->isa('RT::SearchBuilder') ) {
+	my %args = (
+			BaseObj => undef,
+			TargetObjs => undef,
+			Shredder => undef,
+			@_
+		   );
+	my ($targets) = delete $args{'TargetObjs'};
+	if( UNIVERSAL::isa( $targets, 'RT::SearchBuilder' ) ) {
 		while( my $tmp = $targets->Next ) {
-			$self->_PushDependency( $base, $strength, $tmp);
+			$self->_PushDependency( %args, TargetObj => $tmp );
 		}
-	} elsif ( ref( $targets ) =~ /^RT::.*/ && $targets->isa('RT::Record') ) {
-		$self->_PushDependency( $base, $strength, $targets);
+	} elsif ( UNIVERSAL::isa( $targets, 'RT::Record' ) ) {
+		$self->_PushDependency( %args, TargetObj => $targets );
 	} elsif ( ref $targets eq 'ARRAY' ) {
 		foreach my $tmp( @$targets ) {
-			$self->_PushDependency( $base, $strength, $tmp);
+			$self->_PushDependencies( %args, TargetObjs => $tmp );
 		}
 	} else {
 		RTx::Shredder::Exception->throw( "Unsupported type ". ref $targets );
@@ -83,15 +44,19 @@ sub _PushDependencies
 sub _PushDependency
 {
 	my $self = shift;
-	my ($base, $strength, $target) = @_;
-	return if( $self->Lookup(
-				Object => $target,
-				Strength => 'DependsOn'
-				) );
+	my %args = (
+			BaseObj => undef,
+			TargetObj => undef,
+			Shredder => undef,
+			@_
+		   );
+	my $shredder = $args{'Shredder'};
+	my $rec = $shredder->PutObject( Object => $args{'TargetObj'} );
+	return if( $rec->{'State'} );
 	push( @{ $self->{'list'} }, RTx::Shredder::Dependency->new(
-			BaseObj => $base,
-			Strength => $strength,
-			TargetObj => $target )
+			BaseObj => $args{'BaseObj'},
+			Flags => $args{'Flags'},
+			TargetObj => $rec->{'Object'} )
 	    );
 
 	if( scalar @{ $self->{'list'} } > ( $RT::DependenciesLimit || 1000 ) ) {
@@ -104,30 +69,28 @@ sub Wipeout
 {
 	my $self = shift;
 	my %args = (
-			@_,
-		   );
+		WithFlags => undef,
+		WithoutFlags => undef,
+		@_
+	);
 
-	unless( $self->{'expanded'} ) {
-		RTx::Shredder::Exception->throw( 'Cant wipeout not expanded dependencies' );
-	};
-
-	$self->_Wipeout( %args );
-
-	return;
-}
-
-sub _Wipeout
-{
-	my $self = shift;
-
+	my $wflags = delete $args{'WithFlags'};
+	my $woflags = delete $args{'WithoutFlags'};
 	my $deps = $self->{'list'};
 
-	while( my $d = pop @{ $deps } ) {
+	foreach my $d ( @{ $deps } ) {
+		next unless( $d->Flags & DEPENDS_ON );
+		next if( defined( $wflags ) && !$d->Flags & $wflags );
+		next if( defined( $woflags ) && $d->Flags & $woflags );
 		my $o = $d->TargetObj;
-		$o->__Wipeout();
+		$o->Wipeout( %args );
 	}
 
 	return;
 }
 
+sub DESTROY
+{
+	print ref($_[0]) ." gotcha\n";
+}
 1;

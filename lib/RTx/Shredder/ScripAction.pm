@@ -1,10 +1,9 @@
-package RT::TicketCustomFieldValue;
+package RT::ScripAction;
 
 use strict;
 use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
-
 
 sub Dependencies
 {
@@ -21,12 +20,18 @@ sub Dependencies
 
 	my $deps = RTx::Shredder::Dependencies->new();
 
-# No dependencies that should be deleted with record
-
-#TODO: We should export Custom Field if want export tool.
+# Scrips
+	my $objs = RT::Scrips->new( $self->CurrentUser );
+	$objs->Limit( FIELD => 'ScripAction', VALUE => $self->Id );
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $objs,
+			Shredder => $args{'Shredder'}
+		);
 
 	return $deps;
 }
 
-1;
 
+1;

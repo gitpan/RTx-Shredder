@@ -3,7 +3,7 @@
 AC_PREREQ(2.59)
 AC_INIT([RTx::Shredder],[0.01],[cubic@wildgate.miee.ru])
 
-AC_CONFIG_SRCDIR([lib/RTx/Shredder.pm])
+AC_CONFIG_SRCDIR([lib/RTx/Shredder.pm.in])
 
 # Checks for programs.
 #AC_PROG_INSTALL
@@ -24,7 +24,8 @@ AC_SUBST(RT_LIB_PATH)
 # Checks for library functions.
 
 AC_CONFIG_FILES([
-		 sbin/rtx-shredder],
+		 sbin/rtx-shredder
+		 lib/RTx/Shredder.pm],
 		[chmod ug=rx,o= sbin/rtx-shredder]
 	       )
 AC_OUTPUT

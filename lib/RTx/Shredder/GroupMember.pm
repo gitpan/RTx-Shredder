@@ -1,6 +1,7 @@
 package RT::GroupMember;
 
 use strict;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
@@ -9,8 +10,8 @@ sub Dependencies
 {
 	my $self = shift;
 	my %args = (
-			Cached => undef,
-			Strength => 'DependsOn',
+			Shredder => undef,
+			Flags => DEPENDS_ON,
 			@_,
 		   );
 
@@ -18,7 +19,7 @@ sub Dependencies
 		RTx::Shredder::Exception->throw('Object is not loaded');
 	}
 
-	my $deps = $args{'Cached'} || RTx::Shredder::Dependencies->new();
+	my $deps = RTx::Shredder::Dependencies->new();
 
 # No dependencies that should be deleted with record
 

@@ -24,6 +24,7 @@ use strict;
 use lib qw(@RT_LIB_PATH@);
 
 use RTx::Shredder;
+RTx::Shredder::Init();
 
 
 my $date = shift;
@@ -45,7 +46,7 @@ unless( $tickets->Count ) {
 	print "Tickets list is empty.\n";
 	exit(0);
 } else {
-	print $tickets->Count() ."tickets would be wiped out.\n";
+	print $tickets->Count() ." tickets would be wiped out.\n";
 	print "Are you shure? [y/N] ";
 	unless( <STDIN> =~ /^y$/i ) {
 		exit(0);

@@ -1,6 +1,15 @@
 Revision history for Perl module RTx::Shredder
 
-v0.00_1
+v0.00_03
+	* Disribution clean up, get rid from auto* files
+	* fix: Ticket vs Links handling
+	* fix: Ticket vs merged in parts
+	* Templates, Queues... cover
+	* Partly Users coverage
+	* Now almost all Objects in RT 3.0.x covered
+	* Big design rework
+
+v0.00_01
 	* Initial commit
 
 

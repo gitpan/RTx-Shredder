@@ -1,0 +1,4 @@
+^Makefile$
+^blib/
+^autom4te\.cache
+^config\.

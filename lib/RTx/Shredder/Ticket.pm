@@ -1,6 +1,7 @@
 package RT::Ticket;
 
 use strict;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
@@ -8,8 +9,8 @@ sub Dependencies
 {
 	my $self = shift;
 	my %args = (
-			Cached => undef,
-			Strength => 'DependsOn',
+			Shredder => undef,
+			Flags => DEPENDS_ON,
 			@_,
 		   );
 
@@ -17,32 +18,53 @@ sub Dependencies
 		RTx::Shredder::Exception->throw('Object is not loaded');
 	}
 
-	my $deps = $args{'Cached'} || RTx::Shredder::Dependencies->new();
+	my $deps = RTx::Shredder::Dependencies->new();
+	my $list = [];
+
+# Tickets which were merged in
+	my $objs = RT::Tickets->new( $self->CurrentUser );
+	$objs->{'allow_deleted_search'} = 1;
+	$objs->Limit( FIELD => 'EffectiveId', VALUE => $self->Id );
+	$objs->Limit( FIELD => 'id', OPERATOR => '!=', VALUE => $self->Id );
+	push( @$list, $objs );
 
 # Ticket role groups( Owner, Requestors, Cc, AdminCc )
-	my $objs = RT::Groups->new( $self->CurrentUser );
+	$objs = RT::Groups->new( $self->CurrentUser );
 	$objs->Limit( FIELD => 'Domain', VALUE => 'RT::Ticket-Role' );
 	$objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+	push( @$list, $objs );
 
 # Transactions
 	$objs = $self->Transactions;
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
-# Links
-	$objs = $self->_Links( 'Base' );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+	push( @$list, $objs );
 
-	$objs = $self->_Links( 'Target' );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+# Links
+# Native API calls that select using Ticket's URI
+	push( @$list, $self->_Links( 'Base' ) );
+	push( @$list, $self->_Links( 'Target' ) );
+
+# Indirect lowlevel clean up via Local* fields
+	$objs = RT::Links->new( $self->CurrentUser );
+	$objs->Limit( FIELD => 'LocalBase', VALUE => $self->Id );
+	push( @$list, $objs );
+	$objs = RT::Links->new( $self->CurrentUser );
+	$objs->Limit( FIELD => 'LocalTarget', VALUE => $self->Id );
+	push( @$list, $objs );
+
 # Ticket custom field values
 	$objs = RT::TicketCustomFieldValues->new( $self->CurrentUser );
 	$objs->LimitToTicket( $self->Id() );
-	$deps->_PushDependencies( $self, 'DependsOn', $objs );
+	push( @$list, $objs );
 
 #TODO: Users, Queues if we wish export tool
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
 
 	return $deps;
 }
-
 
 1;
