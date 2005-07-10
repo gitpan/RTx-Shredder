@@ -8,13 +8,15 @@ license			('perl');
 
 build_requires		('Test::More');
 requires		('Getopt::Long');
-requires		('Getopt::Simple');
 requires		('Exception::Class');
 
 my ($lp) = $INC{'RT.pm'} =~ /^(.*)[\\\/]/;
 my $lib_path = join( ' ', "$RT::LocalPath/lib", $lp );
-print `./configure --with-rt-lib='$lib_path'`;
 
-skip( qr/\.in$/ );
+substitute( { RT_LIB_PATH => $lib_path },
+		 qw(sbin/rtx-shredder
+		 sbin/rtx-validator
+		 lib/RTx/Shredder.pm)
+	  );
 
 &WriteAll;

@@ -45,6 +45,8 @@ RTx::Shredder
 
 use strict;
 use warnings FATAL => 'all';
+
+### after: use lib qw(@RT_LIB_PATH@);
 use lib qw(/opt/rt3/local/lib /opt/rt3/lib);
 
 use Getopt::Long qw(GetOptions);
@@ -52,7 +54,78 @@ use File::Spec;
 
 use constant PAGE_SIZE => 100;
 
-my %opt;
+our %opt;
+parse_args();
+
+unless( $opt{'object'} ) {
+	usage();
+}
+
+unless( $opt{'sqldump'} ) {
+	print STDERR "WARNING: It's strongly recommended to use '--sqldump <filename>' option\n";
+	unless( $opt{'force'} ) {
+		exit(0) unless prompt_yN( "Do you want to proceed?" );
+	}
+}
+
+use RTx::Shredder;
+RTx::Shredder::Init( %opt );
+
+my $obj = load_object( $opt{'object'} );
+
+print $obj->_AsString ." would be deleted.\n";
+exit(0) unless $opt{'force'} || prompt_yN( "Do you want to proceed?" );
+
+my $shredder = new RTx::Shredder( %opt );
+$shredder->PutObject( Object => $obj );
+$shredder->Wipeout;
+
+# my $tickets = RT::Tickets->new( $RT::SystemUser );
+# $tickets->{'allow_deleted_search'} = 1;
+# $tickets->LimitStatus( VALUE => 'deleted' );
+# $tickets->LimitLastUpdated( OPERATOR => '<', VALUE => "$date 00:00");
+# 
+# my $total = $tickets->Count;
+# 
+# unless( $total ) {
+# 	print "Tickets list is empty.\n";
+# 	exit(0);
+# } else {
+# 	print "$total tickets would be wiped out.\n";
+# 	exit(0) unless $opt{'force'} || prompt_yN( "Do you want to proceed?" );
+# }
+# 
+# $tickets->RowsPerPage( PAGE_SIZE );
+# 
+# do {
+# 	my $shredder = new RTx::Shredder( %opt );
+# 	while( my $t = $tickets->Next ) {
+# 		$shredder->PutObject( Object => $t );
+# 	}
+# 	$shredder->Wipeout;
+# } while( $tickets->NextPage < $total );
+
+sub prompt_yN
+{
+	my $text = shift;
+	print "$text [y/N] ";
+	unless( <STDIN> =~ /^(?:y|yes)$/i ) {
+		return 0;
+	}
+	return 1;
+}
+
+sub usage
+{
+	print <<END;
+	usage: $0 [--force] [--sqldump <fpath>] --object <name>-<id>
+
+	see also `perldoc rtx-shredder` for more info.
+END
+	exit 1;
+
+}
+
 sub parse_args
 {
 	my $tmp;
@@ -62,93 +135,58 @@ sub parse_args
 	}
 	$tmp = undef;
 	if( GetOptions( 'sqldump=s' => \$tmp ) && $tmp ) {
-		if( -f $tmp ) {
-			unless( -w $tmp ) {
-				die "File '$tmp' exists, but read-only";
-			}
-		} elsif( !-e $tmp ) {
-			unless( File::Spec->file_name_is_absolute( $tmp ) ) {
-				$tmp = File::Spec->rel2abs( $tmp ) ;
-			}
-			#file base dir
-			my $dir = File::Spec->join( (File::Spec->splitpath( $tmp ))[0,1] );
-			unless( -e $dir && -d _) {
-				die "Base directory '$dir' for file '$tmp' doesn't exist";
-			}
-			unless( -w $dir ) {
-				die "Base directory '$dir' is not writable";
-			}
-		} else {
-			die "'$tmp' is not regular file";
-		}
-		if( -s $tmp ) {
-			print STDERR "WARNING: file '$tmp' is not empty, content would be overwriten\n";
-			exit(0) unless prompt_yN( "Do you want to proceed?" );
-		}
-		open my $fh, ">$tmp" or die "Couldn't open '$tmp' for write: $!";
-		$opt{'sqldump'} = $fh;
+		$opt{'sqldump'} = get_sqldump_fh( $tmp );
+	}
+	$tmp = undef;
+	if( GetOptions( 'object=s' => \$tmp ) && $tmp ) {
+		$opt{'object'} = $tmp;
 	}
 	return;
 }
 
-parse_args();
-
-my $date = shift;
-unless( $date =~ /\d\d\d\d-\d\d-\d\d/ ) {
-	print <<END;
-	usage: $0 [--force] [--sqldump <fpath>] YYYY-MM-DD
-
-	see also `perldoc rtx-shredder` for more info.
-END
-	exit 1;
-}
-
-use RTx::Shredder;
-RTx::Shredder::Init( %opt );
-
-my $tickets = RT::Tickets->new( $RT::SystemUser );
-$tickets->{'allow_deleted_search'} = 1;
-$tickets->LimitStatus( VALUE => 'deleted' );
-$tickets->LimitLastUpdated( OPERATOR => '<', VALUE => "$date 00:00");
-
-my $total = $tickets->Count;
-
-unless( $total ) {
-	print "Tickets list is empty.\n";
-	exit(0);
-} else {
-	print "$total tickets would be wiped out.\n";
-	unless( $opt{'force'} ) {
-		exit(0) unless prompt_yN( "Do you want to proceed?" );
-	}
-}
-
-unless( $opt{sqldump} ) {
-	print STDERR "WARNING: It's strongly recommended to use '--sqldump <filename>' option\n";
-	unless( $opt{'force'} ) {
-		exit(0) unless prompt_yN( "Do you want to proceed?" );
-	}
-}
-
-$tickets->RowsPerPage( PAGE_SIZE );
-
-do {
-	my $shredder = new RTx::Shredder( %opt );
-	while( my $t = $tickets->Next ) {
-		$shredder->PutObject( Object => $t );
-	}
-	$shredder->Wipeout;
-} while( $tickets->NextPage < $total );
-
-1;
-
-sub prompt_yN
+sub get_sqldump_fh
 {
-	my $text = shift;
-	print "$text [y/N] ";
-	unless( <STDIN> =~ /^y$/i ) {
-		return 0;
+	my $file = shift;
+	if( -f $file ) {
+		unless( -w $file ) {
+			die "File '$file' exists, but is read-only";
+		}
+	} elsif( !-e $file ) {
+		unless( File::Spec->file_name_is_absolute( $file ) ) {
+			$file = File::Spec->rel2abs( $file ) ;
+		}
+		#file base dir
+		my $dir = File::Spec->join( (File::Spec->splitpath( $file ))[0,1] );
+		unless( -e $dir && -d _) {
+			die "Base directory '$dir' for file '$file' doesn't exist";
+		}
+		unless( -w $dir ) {
+			die "Base directory '$dir' is not writable";
+		}
+	} else {
+		die "'$file' is not regular file";
 	}
-	return 1;
+	if( -s $file ) {
+		print STDERR "WARNING: file '$file' is not empty, content would be overwriten\n";
+		exit(0) unless $opt{force} || prompt_yN( "Do you want to proceed?" );
+	}
+	open my $fh, ">$file" or die "Couldn't open '$file' for write: $!";
+	return $fh;
 }
 
+sub load_object
+{
+	my $desc = shift;
+	my ($class, $id) = split /-/, $desc;
+	$class = 'RT::'. $class;
+	eval "require $class";
+	die "Couldn't load '$class' module" if $@;
+	my $obj = $class->new( $RT::SystemUser );
+	die "Couldn't construct new '$class' object" unless $obj;
+	$obj->Load( $id );
+	die "Couldn't load '$class' object by id '$id'" unless $obj->id;
+	die "Loaded object has different id" unless( $id eq $obj->id );
+	return $obj;
+}
+
+exit(0);

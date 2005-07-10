@@ -2,5 +2,4 @@
 ^Build$
 ^blib/
 ^_build/
-^autom4te\.cache
-^config\.
+^pm_to_blib/

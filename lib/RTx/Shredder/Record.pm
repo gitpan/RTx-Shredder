@@ -20,7 +20,8 @@ sub _AsString
 
 =head2 _AsInsertQuery
 
-Returns INSERT query string.
+Returns INSERT query string that duplicates current record and
+can be used to insert record back into DB after delete.
 
 =cut
 
@@ -69,6 +70,36 @@ sub Dependencies
 
 sub __DependsOn
 {
+	my $self = shift;
+	my %args = (
+			Shredder => undef,
+			Dependencies => undef,
+			@_,
+		   );
+	my $deps = $args{'Dependencies'};
+	my $list = [];
+
+# Object custom field values
+	my $objs = $self->CustomFieldValues;
+	$objs->{'find_expired_rows'} = 1;
+	push( @$list, $objs );
+
+# Object attributes
+	$objs = $self->Attributes;
+	push( @$list, $objs );
+
+# Transactions
+	$objs = RT::Transactions->new( $self->CurrentUser );
+	$objs->Limit( FIELD => 'ObjectType', VALUE => ref $self );
+	$objs->Limit( FIELD => 'ObjectId', VALUE => $self->id );
+	push( @$list, $objs );
+
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
 	return;
 }
 

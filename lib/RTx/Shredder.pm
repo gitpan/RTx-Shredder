@@ -101,13 +101,15 @@ perl(1), C<rtx-shredder>
 
 =cut
 
-our $VERSION = '0.01_01';
+our $VERSION = '0.01_02';
 
 
 BEGIN {
 # I can't use 'use lib' here since it breakes tests
-# cause test suite uses old RTx::Shredder setup from
+# because test suite uses old RTx::Shredder setup from
 # RT lib path
+
+### after:	push @INC, qw(@RT_LIB_PATH@);
 	push @INC, qw(/opt/rt3/local/lib /opt/rt3/lib);
 	use RTx::Shredder::Constants;
 
@@ -124,7 +126,7 @@ BEGIN {
 	require RT::Attachment;
 	require RT::Principal;
 	require RT::Link;
-	require RT::TicketCustomFieldValue;
+	require RT::ObjectCustomFieldValue;
 	require RT::CustomField;
 	require RT::CustomFieldValue;
 	require RT::Scrip;
@@ -147,7 +149,7 @@ BEGIN {
 	require RTx::Shredder::ScripAction;
 	require RTx::Shredder::ScripCondition;
 	require RTx::Shredder::Template;
-	require RTx::Shredder::TicketCustomFieldValue;
+	require RTx::Shredder::ObjectCustomFieldValue;
 	require RTx::Shredder::Ticket;
 	require RTx::Shredder::Transaction;
 	require RTx::Shredder::User;

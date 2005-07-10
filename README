@@ -19,8 +19,8 @@ II. INSTALL
 
 1) System rights
 
-You should be logged in under user who has read rights on RT config files and
-write rights on RT local dirs. It's limitation, but module must load
+You should be logged in under user who has read rights on the RT config files and
+write rights on the RT local dirs. This is limitation, but module must load
 RT config files to proceed successfully.
 
 2) Environment and command line arguments
@@ -30,14 +30,14 @@ You can use PREFIX to specify RT prefix
 	PREFIX=/opt/rt3 perl Makefile.PL
 	perl Makefile.PL PREFIX=/opt/rt3
 
-Also you can RTHOME env.
-If RT couldn't be find you would be asked about path to RT.pm.
+Also you can use RTHOME env.
+If RT.pm couldn't be found you would be asked about path to RT.pm.
 
 NOTE: I didn't make tests with non standard locations of RT.
 If you have problems please send me note about you layout and also
 output of `perl Makefile.PL` command.
 
-3) Patch
+3) Patch(RT > 3.0.8 and RT < 3.4)
 
 RT core API limit searches on deleted tickets. I wrote patch that should be applied to RT.
 Patch is shipped with distro under patches/ directory. You can apply it with next commands:
@@ -49,6 +49,8 @@ NOTE: patch generate rejections in Ticketss_Overlay_SQL.pm in RT-3.0.8 and previ
 You can ignore this. RT-3.0.8 have no code in Tickets_Overlay_SQL.pm that restrict search on
 deleted tickets, but have code in other files that doesn't allow me to step through collection
 of the deleted tickets.
+
+NOTE: RT 3.4 has this patch in the mailine.
 
 4) Installing
 

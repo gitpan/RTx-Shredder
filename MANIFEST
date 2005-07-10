@@ -1,6 +1,4 @@
 Changes
-configure
-configure.ac
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Build.pm
@@ -8,12 +6,11 @@ inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
-inc/Module/Install/Skip.pm
+inc/Module/Install/Substitute.pm
 inc/Module/Install/RTx.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/RTx/Shredder.pm
-lib/RTx/Shredder.pm.in
 lib/RTx/Shredder/Dependency.pm
 lib/RTx/Shredder/Dependencies.pm
 lib/RTx/Shredder/Exceptions.pm
@@ -31,7 +28,7 @@ lib/RTx/Shredder/ScripAction.pm
 lib/RTx/Shredder/ScripCondition.pm
 lib/RTx/Shredder/Template.pm
 lib/RTx/Shredder/Ticket.pm
-lib/RTx/Shredder/TicketCustomFieldValue.pm
+lib/RTx/Shredder/ObjectCustomFieldValue.pm
 lib/RTx/Shredder/CustomField.pm
 lib/RTx/Shredder/CustomFieldValue.pm
 lib/RTx/Shredder/Transaction.pm
@@ -44,7 +41,5 @@ MANIFEST
 MANIFEST.SKIP
 META.yml
 sbin/rtx-shredder
-sbin/rtx-shredder.in
 sbin/rtx-validator
-sbin/rtx-validator.in
 Todo

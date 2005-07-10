@@ -11,6 +11,12 @@ v0.02
 	* fix: User should delete itself from GroupMembers and from Cached
 	* fix: CachedGroupMember should delete other CGMs that are 'Via' current
 	* upd: New documentation, README should be more clean
+	* fea: get rid of configure script and all .in files
+	       now we use Module::Install::Substitute
+	* upd: rtx-shredder args parsing cleanup
+	* upd: Distribution doesn't require Getopt::Simple any more
+	* fea: new --object option for rtx-shredder script
+	* fix: Transactions, ObjectCustomFieldValues, Attributes are handled
 v0.01
 	* fea: rtx-validator
 	* fix: nested Attachments handling if Atachment is requested for wiping directly.

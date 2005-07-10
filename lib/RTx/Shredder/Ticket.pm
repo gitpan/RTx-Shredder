@@ -29,10 +29,6 @@ sub __DependsOn
 	$objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
 	push( @$list, $objs );
 
-# Transactions
-	$objs = $self->Transactions;
-	push( @$list, $objs );
-
 # Links
 # Native API calls that select using Ticket's URI
 	push( @$list, $self->_Links( 'Base' ) );
@@ -44,11 +40,6 @@ sub __DependsOn
 	push( @$list, $objs );
 	$objs = RT::Links->new( $self->CurrentUser );
 	$objs->Limit( FIELD => 'LocalTarget', VALUE => $self->Id );
-	push( @$list, $objs );
-
-# Ticket custom field values
-	$objs = RT::TicketCustomFieldValues->new( $self->CurrentUser );
-	$objs->LimitToTicket( $self->Id() );
 	push( @$list, $objs );
 
 #TODO: Users, Queues if we wish export tool

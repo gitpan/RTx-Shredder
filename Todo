@@ -18,7 +18,12 @@ TODO list for RT Shredder extension
                 $rec->{'Description'} = "Have no related Object #". $self->id ." object";
         }
 
-	* adopt for 3.2 changes
+	* adopt for 3.4 changes
+	* investigate how to play with queue CFs, mainly when ticket was moved
+	  to another queue, such tickets have CFs values, we should delete it
+	  if we delete queue.
+	* Search plugins, implement framework for writing search plugins. For example
+	  we can implement search for bad users(spammers) with plugin interface.
 
 
 
