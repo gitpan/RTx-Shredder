@@ -1,6 +1,10 @@
+use RT::Link ();
 package RT::Link;
 
 use strict;
+use warnings;
+use warnings FATAL => 'redefine';
+
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 use RTx::Shredder::Constants;

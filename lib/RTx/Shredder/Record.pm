@@ -1,6 +1,10 @@
+use RT::Record ();
 package RT::Record;
 
 use strict;
+use warnings;
+use warnings FATAL => 'redefine';
+
 use RTx::Shredder::Constants;
 
 =head2 _AsString
@@ -92,6 +96,11 @@ sub __DependsOn
 	$objs = RT::Transactions->new( $self->CurrentUser );
 	$objs->Limit( FIELD => 'ObjectType', VALUE => ref $self );
 	$objs->Limit( FIELD => 'ObjectId', VALUE => $self->id );
+	push( @$list, $objs );
+
+# ACE records
+	$objs = RT::ACL->new( $self->CurrentUser );
+	$objs->LimitToObject( $self );
 	push( @$list, $objs );
 
 	$deps->_PushDependencies(

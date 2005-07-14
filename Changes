@@ -1,7 +1,18 @@
 Revision history for Perl module RTx::Shredder
 
-v0.02
-	* fix: validator now works
+v0.01_03
+	* WARN: rtx-validator may fails, I don't update it
+	* fix: ObjectCFV issues
+	* fea: tests framework!!!
+	* upd: basic tests
+	* upd: 00skeleton.t file
+	* fea: shredder dies if some methods are redefined
+	       this is done to be forward compatible
+	       and die before we could break something
+	* upd: Todo changes
+
+v0.01_02
+	* WARN: basic RT >= 3.4.x support
 	* fix: Users shredding was not loaded at all
 	* fea: --force, never ask questions, for cron users
 	* fea: --sqldump, Shredder generates INSERT queries
@@ -17,6 +28,10 @@ v0.02
 	* upd: Distribution doesn't require Getopt::Simple any more
 	* fea: new --object option for rtx-shredder script
 	* fix: Transactions, ObjectCustomFieldValues, Attributes are handled
+
+v0.01_01
+	* WARN: this is last version you can use with RT 3.0.x
+	* fix: validator now works
 v0.01
 	* fea: rtx-validator
 	* fix: nested Attachments handling if Atachment is requested for wiping directly.

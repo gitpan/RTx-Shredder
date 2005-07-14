@@ -1,6 +1,10 @@
+use RT::Attachment ();
 package RT::Attachment;
 
 use strict;
+use warnings;
+use warnings FATAL => 'redefine';
+
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Constants;
 use RTx::Shredder::Dependencies;

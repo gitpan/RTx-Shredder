@@ -15,6 +15,7 @@ lib/RTx/Shredder/Dependency.pm
 lib/RTx/Shredder/Dependencies.pm
 lib/RTx/Shredder/Exceptions.pm
 lib/RTx/Shredder/Constants.pm
+lib/RTx/Shredder/ACE.pm
 lib/RTx/Shredder/Attachment.pm
 lib/RTx/Shredder/CachedGroupMember.pm
 lib/RTx/Shredder/Group.pm
@@ -33,6 +34,10 @@ lib/RTx/Shredder/CustomField.pm
 lib/RTx/Shredder/CustomFieldValue.pm
 lib/RTx/Shredder/Transaction.pm
 lib/RTx/Shredder/User.pm
+t/00load.t
+t/00skeleton.t
+t/01basics.t
+t/utils.pl
 patches/search_deleted_on_explicit_requests.patch
 README
 Makefile.PL

@@ -1,11 +1,15 @@
+use RT::User ();
 package RT::User;
 
 use strict;
+use warnings;
+use warnings FATAL => 'redefine';
+
 use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;
 
-my $OBJECTS = qw(
+my @OBJECTS = qw(
 	Attachments
 	CachedGroupMembers
 	CustomFields
@@ -19,7 +23,7 @@ my $OBJECTS = qw(
 	ScripConditions
 	Scrips
 	Templates
-	TicketCustomFieldValues
+	ObjectCustomFieldValues
 	Tickets
 	Transactions
 	Users

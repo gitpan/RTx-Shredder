@@ -7,7 +7,7 @@ TODO list for RT Shredder extension
 	* write export API
 	* discover rt2-to-rt3 migration tools and its file format
 
-	* Generalize next code:
+	* Generalize next code in validator code paths:
         $obj = $self->Object;
         if( defined $obj->id ) {
                 push( @$list, $obj );
@@ -18,12 +18,17 @@ TODO list for RT Shredder extension
                 $rec->{'Description'} = "Have no related Object #". $self->id ." object";
         }
 
-	* adopt for 3.4 changes
+	* adopt for 3.4 changes(basic things done in 0.01_02)
 	* investigate how to play with queue CFs, mainly when ticket was moved
 	  to another queue, such tickets have CFs values, we should delete it
 	  if we delete queue.
 	* Search plugins, implement framework for writing search plugins. For example
 	  we can implement search for bad users(spammers) with plugin interface.
+	* Update docs before stable release
+	* Move delete handler to hook DBIx::SB::Record hook to be sure if some RT
+	  core code delete record behind our back we could catch it. NOTE: if plan
+	  integration into WebUI this hook would be global so we should check if it
+	  is shredder or not.
 
 
 

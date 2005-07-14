@@ -1,14 +1,13 @@
-use RT::Template ();
-package RT::Template;
+use RT::ACE ();
+package RT::ACE;
 
 use strict;
 use warnings;
 use warnings FATAL => 'redefine';
 
-use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
+use RTx::Shredder::Constants;
 use RTx::Shredder::Dependencies;
-
 
 sub __DependsOn
 {
@@ -21,6 +20,13 @@ sub __DependsOn
 	my $deps = $args{'Dependencies'};
 	my $list = [];
 
+
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON,
+			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
 	return $self->SUPER::__DependsOn( %args );
 }
 
@@ -35,19 +41,6 @@ sub __Relates
 	my $deps = $args{'Dependencies'};
 	my $list = [];
 
-# Queue
-	my $obj = $self->QueueObj;
-	if( $obj && defined $obj->id ) {
-		push( @$list, $obj );
-	} else {
-		my $rec = $args{'Shredder'}->GetRecord( Object => $self );
-		$self = $rec->{'Object'};
-		$rec->{'State'} |= INVALID;
-		$rec->{'Description'} = "Have no related Queue #". $self->id ." object";
-	}
-
-# TODO: Users(Creator, LastUpdatedBy)
-
 	$deps->_PushDependencies(
 			BaseObj => $self,
 			Flags => RELATES,
@@ -56,5 +49,5 @@ sub __Relates
 		);
 	return $self->SUPER::__Relates( %args );
 }
-
 1;
+

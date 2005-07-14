@@ -1,6 +1,10 @@
+use RT::ScripCondition ();
 package RT::ScripCondition;
 
 use strict;
+use warnings;
+use warnings FATAL => 'redefine';
+
 use RTx::Shredder::Constants;
 use RTx::Shredder::Exceptions;
 use RTx::Shredder::Dependencies;

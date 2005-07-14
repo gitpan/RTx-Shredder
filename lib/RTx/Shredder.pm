@@ -45,7 +45,7 @@ C<RT_SiteConfig.pm> add Set( $DependenciesLimit, new_limit );
 
 Dependencies method implementend in each RT class which Shredder can delete.
 Now Shredder support wipe out of Ticket, Transaction, Attachment,
-TicketCustomFieldValue, Principal, ACE, Group, GroupMember,
+ObjectCustomFieldValue, Principal, ACE, Group, GroupMember,
 CachedGroupMember.
 
 =head1 NOTES
@@ -101,7 +101,7 @@ perl(1), C<rtx-shredder>
 
 =cut
 
-our $VERSION = '0.01_02';
+our $VERSION = '0.01_03';
 
 
 BEGIN {
@@ -113,29 +113,11 @@ BEGIN {
 	push @INC, qw(/opt/rt3/local/lib /opt/rt3/lib);
 	use RTx::Shredder::Constants;
 
-	require RT;
+	use RT ();
 
-	require RT::Record;
-	require RTx::Shredder::Record;
+	use RTx::Shredder::Record;
 
-	require RT::Ticket;
-	require RT::Group;
-	require RT::GroupMember;
-	require RT::CachedGroupMember;
-	require RT::Transaction;
-	require RT::Attachment;
-	require RT::Principal;
-	require RT::Link;
-	require RT::ObjectCustomFieldValue;
-	require RT::CustomField;
-	require RT::CustomFieldValue;
-	require RT::Scrip;
-	require RT::Queue;
-	require RT::ScripCondition;
-	require RT::ScripAction;
-	require RT::Template;
-	require RT::User;
-
+	require RTx::Shredder::ACE;
 	require RTx::Shredder::Attachment;
 	require RTx::Shredder::CachedGroupMember;
 	require RTx::Shredder::CustomField;
