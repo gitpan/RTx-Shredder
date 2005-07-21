@@ -1,5 +1,13 @@
 Revision history for Perl module RTx::Shredder
 
+v0.02
+
+	* upd: update docs to be more consisten with current env
+	* upd: author email address changed
+	* upd: Makefile.PL requires RT 3.4 now
+	* upd: perltidy on the t/utils.pl
+	* upd: documentation about testing
+
 v0.01_03
 	* WARN: rtx-validator may fails, I don't update it
 	* fix: ObjectCFV issues

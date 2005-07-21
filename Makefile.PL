@@ -8,6 +8,7 @@ license			('perl');
 
 requires		('Getopt::Long');
 requires		('Exception::Class');
+requires		('RT', 3.4);
 build_requires		('DBD::SQLite');
 build_requires		('Test::More');
 build_requires		('Test::Deep');

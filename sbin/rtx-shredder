@@ -6,20 +6,25 @@ rtx-shredder - Script which wipe out tickets from DB
 
 =head1 SYNOPSIS
 
-rtx-shredder 2004-10-03
+  rtx-shredder --force --sqldump unshred.sql --object Ticket-1
 
 =head1 DESCRIPTION
 
-rtx-shredder - is script that allow you to wipe out deleted tickets
+rtx-shredder - is script that allow you to wipe out objects
 from RT DB. This script uses API that RTx::Shredder module adds to RT.
 Script can be used as example of usage of the shredder API.
 
 =head1 USAGE
 
-Scrip takes one argument - date in YYYY-MM-DD format.
-Only tickets that were updated before that date would be wiped out.
+You can use several options to control which objects script
+should delete.
 
 =head1 OPTIONS
+
+=head2 --object
+
+Object you want to delete. Foramt is ObjectName-#id, for example
+Ticket-1 or Transaction-10.
 
 =head2 --force
 
@@ -27,19 +32,12 @@ Script doesn't ask any questions.
 
 =head2 --sqldump <filename>
 
-Outputs INSERT queiries into file this dump can be used to restore data
+Outputs INSERT queiries into file. This dump can be used to restore data
 after wiping out.
-
-=head1 NOTES
-
-=head2 Tickets list is empty
-
-RTx-Shredder distribution contains patch that should be applied to RT.
-Please read README file to learn more about this patch.
 
 =head1 SEE ALSO
 
-RTx::Shredder
+L<RTx::Shredder>
 
 =cut
 

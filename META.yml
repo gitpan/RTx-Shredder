@@ -1,5 +1,5 @@
 name: RTx-Shredder
-version: 0.01_03
+version: 0.02
 abstract: RT Shredder Extension
 author: Ruslan U. Zakirov <cubic@wildgate.miee.ru>
 license: perl

@@ -7,8 +7,6 @@ RTx::Shredder - Cleanup RT database
 
 =head1 SYNOPSIS
 
-  rtx-shredder --force --sqldump unshred.sql 2005-01-01
-
   use RTx::Shredder;
   RTx::Shredder::Init( force => 1 );
   my $deleted = RT::Tickets->new( $RT::SystemUser );
@@ -24,9 +22,9 @@ RTx::Shredder is extention to RT API which allow to delete data from database.
 
 =head1 USAGE
 
-RTx::Shredder is extension to RT API which add(push) methods into base RT
-classes. If you are looking for end-user command line tool then see also
-C<rtx-shredder> script that is shipped with the distribution.
+C<RTx::Shredder> modules is extension to RT API which add(push) methods
+into base RT classes. If you are looking for end-user command line tool
+then use L<rtx-shredder> script that is shipped with the distribution.
 
 =head1 CONFIGURATION
 
@@ -35,9 +33,9 @@ C<rtx-shredder> script that is shipped with the distribution.
 Shredder stops with error if object has more then C<$RT::DependenciesLimit>
 dependencies. By default this value is 1000. For example: ticket has 1000
 transactions or transaction has 1000 attachments. This is protection
-from bugs in shredder code, but sometimes when you for example when you
-have big mail loops you may hit it. You can chage default value, in
-C<RT_SiteConfig.pm> add Set( $DependenciesLimit, new_limit );
+from bugs in shredder code, but sometimes when you have big mail loops
+you may hit it. You can change default value, in
+C<RT_SiteConfig.pm> add C<Set( $DependenciesLimit, new_limit );>
 
 =head1 METHODS
 
@@ -71,6 +69,10 @@ This two keys don't allow delete Tickets because of bug in MySQL
 
 	http://bugs.mysql.com/bug.php?id=4042
 
+=head1 TESTING
+
+Read more about testing in L<t/utils.pl>.
+
 =head1 BUGS
 
 =head2 *.in files
@@ -80,12 +82,12 @@ this shouldn't happen in future. I didn't find good solution yet.
 
 =head2 Documentation
 
-Many bugs in small docs: insanity, spelling, gramar and so on.
+Many bugs in the docs: insanity, spelling, gramar and so on.
 Patches are wellcome.
 
 =head1 AUTHOR
 
-	Ruslan U. Zakirov <cubic@wildgate.miee.ru>
+	Ruslan U. Zakirov <Ruslan.Zakirov@miet.ru>
 
 =head1 COPYRIGHT
 
@@ -97,11 +99,11 @@ Perl distribution.
 
 =head1 SEE ALSO
 
-perl(1), C<rtx-shredder>
+L<rtx-shredder>, L<rtx-validator>
 
 =cut
 
-our $VERSION = '0.01_03';
+our $VERSION = 0.02;
 
 
 BEGIN {
