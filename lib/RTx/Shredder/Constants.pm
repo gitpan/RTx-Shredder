@@ -11,7 +11,7 @@ RTx::Shredder::Constants -  RTx::Shredder constants that is used to mark state o
 =head1 DESCRIPTION
 
 This module exports two group of bit constants.
-First group is group of flags which are used to dependecies between objects, and
+First group is group of flags which are used to clarify dependecies between objects, and
 second group is states of RT objects in Shredder cache.
 
 =head1 FLAGS
@@ -22,14 +22,18 @@ Targets that has such dependency flag set should be wiped out with base object.
 
 =head2 WIPE_AFTER
 
-If dependency has such flag then target object should be wiped only
-after base object. Group and Principal have such relationship.
+If dependency has such flag then target object would be wiped only
+after base object. You should mark dependencies with this flag
+if two objects depends on each other, for example Group and Principal
+have such relationship, this mean Group depends on Principal record and
+that Principal record depends on the same Group record. Other examples:
+User and Principal, User and its ACL equivalence group.
 
 =head2 VARIABLE
 
 This flag is used to mark dependencies that can be resolved with changing
 value in target object. For example ticket can be created by user we can
-change this reference on other user.
+change this reference when we delete user.
 
 =head2 RELATES
 
@@ -70,16 +74,19 @@ are valid.
 
 use constant {
 	ON_STACK	=> 0x00000,
-	WIPED		=> 0x00001,
-	VALID		=> 0x00010,
-	INVALID		=> 0x00100,
+	FOR_WIPING	=> 0x00001,
+	WIPED		=> 0x00010,
+	VALID		=> 0x00100,
+	INVALID		=> 0x01000,
 };
 
 our @EXPORT = qw(
 		DEPENDS_ON
 		WIPE_AFTER
 		RELATES
+		VARIABLE
 		ON_STACK
+		FOR_WIPING
 		WIPED
 		VALID
 		INVALID

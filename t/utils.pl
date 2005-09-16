@@ -126,6 +126,8 @@ sub init_db
 	$fname = File::Spec->catfile( $RT::LocalEtcPath, 'initialdata' );
 	__insert_data( $fname ) if -f $fname && -r _;
 	RT::Init();
+	$SIG{__WARN__} = sub { $RT::Logger->warning( @_ ); warn @_ };
+	$SIG{__DIE__} = sub { $RT::Logger->crit( @_ ); die @_ };
 }
 
 sub __init_schema
@@ -430,34 +432,40 @@ sub savepoint_name
 Creates savepoint DB from the current.
 Takes name of the savepoint as argument.
 
+=head3 restore_savepoint
+
+Restores current DB to savepoint state.
+Takes name of the savepoint as argument.
+
 =cut
 
-sub create_savepoint
+sub create_savepoint { return __cp_db( db_name() => savepoint_name( shift ) ) }
+sub restore_savepoint { return __cp_db( savepoint_name( shift ) => db_name() ) }
+sub __cp_db
 {
-	my $orig = db_name();
-	my $dest = savepoint_name( shift );
+	my( $orig, $dest ) = @_;
 	$RT::Handle->dbh->disconnect;
-
 	# undef Handle to force reconnect
 	undef $RT::Handle;
 
 	File::Copy::copy( $orig, $dest ) or die "Couldn't copy '$orig' => '$dest': $!";
-	RT::ConnectToDatabase;
+	RT::ConnectToDatabase();
 	return;
 }
+
 
 =head2 DUMPS
 
 =head3 dump_sqlite
 
 Returns DB dump as complex hash structure:
-{
+    {
 	TableName => {
 		#id => {
 			lc_field => 'value',
 		}
 	}
-}
+    }
 
 Takes named argument C<CleanDates>. If true clean all date fields from
 dump. True by default.
@@ -499,7 +507,7 @@ sub dump_current_and_savepoint
 	my $orig = savepoint_name( shift );
 	die "Couldn't find savepoint file" unless -f $orig && -r _;
 	my $odbh = connect_sqlite( $orig );
-	return ( dump_sqlite( $RT::Handle->dbh ), dump_sqlite( $odbh ) );
+	return ( dump_sqlite( $RT::Handle->dbh, @_ ), dump_sqlite( $odbh, @_ ) );
 }
 
 =head3 dump_savepoint_and_current

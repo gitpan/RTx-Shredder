@@ -1,5 +1,19 @@
 Revision history for Perl module RTx::Shredder
 
+v0.02_01
+	* fea: Web interface
+	* fea: plugins framework
+	* fea: Plugins for Tickers, Attachments and Users
+	* fea: new CLI options: --plugin, --plugin list and --plugin help
+	* fea: messages from CLI now are more useful
+	* upd: doc updates
+	* fea: RTx::Shredder::PutObjects method now support array references
+	       you can put any objects PutObjects support into array.
+	* upd: constants description update
+	* fix: deletion of GroupMember object also delete CachedGroupMember records
+	       + tests
+	* fix: Group(ACLEquivalence), User deletion
+
 v0.02
 
 	* upd: update docs to be more consisten with current env

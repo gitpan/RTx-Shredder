@@ -1,21 +1,6 @@
-I. INTRODUCTION
+See `perldoc lib/RTx/Shredder.pm' for more info about this distribution.
 
-RTx-Shredder distribution has two parts.
-
-1) RT API extension. It's group of files under lib dir.
-
-2) Command line tools that allow you to do several tasks with your
-RT instances. It's group of the files under bin and sbin dirs. Now
-distro has next tools:
-	rtx-shredder
-	rtx-validator
-
-Read PODs to know more about usage.
-
-	perldoc rtx-shredder
-	perldoc rtx-validator
-
-II. INSTALL
+INSTALLATION
 
 1) System rights
 
@@ -36,21 +21,6 @@ If RT.pm couldn't be found you would be asked about path to RT.pm.
 NOTE: I didn't test with non standard locations of RT.
 If you have problems please send me note about you layout and also
 output of `perl Makefile.PL` command.
-
-3) Patch(RT > 3.0.8 and RT < 3.4)
-
-RT core API limit searches on deleted tickets. I wrote patch that should be applied to RT.
-Patch is shipped with distro under patches/ directory. You can apply it with next commands:
-
-	cd /path/to/rt/dir
-	cat /path/to/patch/file | patch -p0
-
-NOTE: patch generate rejections in Ticketss_Overlay_SQL.pm in RT-3.0.8 and previous versions.
-You can ignore this. RT-3.0.8 have no code in Tickets_Overlay_SQL.pm that restrict search on
-deleted tickets, but have code in other files that doesn't allow me to step through collection
-of the deleted tickets.
-
-NOTE: RT 3.4 has this patch in the mainline.
 
 4) Testing
 

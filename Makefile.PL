@@ -1,7 +1,7 @@
 use lib qw(.);
 use inc::Module::Install;
 
-$ENV{'WITH_SUBDIRS'} = 'sbin,lib';
+$ENV{'WITH_SUBDIRS'} = 'sbin,lib,html';
 RTx			('Shredder');
 author			('Ruslan U. Zakirov <cubic@wildgate.miee.ru>');
 license			('perl');
@@ -9,6 +9,9 @@ license			('perl');
 requires		('Getopt::Long');
 requires		('Exception::Class');
 requires		('RT', 3.4);
+requires		('IO::String');
+requires		('Pod::Parser');
+
 build_requires		('DBD::SQLite');
 build_requires		('Test::More');
 build_requires		('Test::Deep');

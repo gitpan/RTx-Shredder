@@ -94,6 +94,28 @@ END
 	return;
 }
 
+=head2 List
+
+
+=cut
+
+sub List
+{
+	my $self = shift;
+	my %args = (
+		WithFlags => undef,
+		WithoutFlags => undef,
+		@_
+	);
+
+	my $wflags = delete $args{'WithFlags'};
+	my $woflags = delete $args{'WithoutFlags'};
+
+	return grep !defined( $wflags ) || ($_->Flags & $wflags) == $wflags,
+	         grep !defined( $woflags ) || !($_->Flags & $woflags),
+		   @{ $self->{'list'} };
+}
+
 =head2 Wipeout
 
 Goes thourgh collection of RTx::Shredder::Dependency objects and wipeout target object
@@ -113,14 +135,11 @@ sub Wipeout
 		@_
 	);
 
-	my $wflags = delete $args{'WithFlags'};
-	my $woflags = delete $args{'WithoutFlags'};
-	my $deps = $self->{'list'};
+	my @deps = $self->List( WithFlags => (delete $args{'WithFlags'} || 0) | DEPENDS_ON,
+			        WithoutFlags => delete $args{'WithoutFlags'},
+			      );
 
-	foreach my $d ( @{ $deps } ) {
-		next unless( $d->Flags & DEPENDS_ON );
-		next if( defined( $wflags ) && !$d->Flags & $wflags );
-		next if( defined( $woflags ) && $d->Flags & $woflags );
+	foreach my $d ( @deps ) {
 		my $o = $d->TargetObj;
 		$o->Wipeout( %args );
 	}
@@ -137,14 +156,11 @@ sub ValidateRelations
 		@_
 	);
 
-	my $wflags = delete $args{'WithFlags'};
-	my $woflags = delete $args{'WithoutFlags'};
-	my $deps = $self->{'list'};
+	my @deps = $self->List( WithFlags => (delete $args{'WithFlags'} || 0) | RELATES,
+			        WithoutFlags => delete $args{'WithoutFlags'},
+			      );
 
-	foreach my $d ( @{ $deps } ) {
-		next unless( $d->Flags & RELATES );
-		next if( defined( $wflags ) && !$d->Flags & $wflags );
-		next if( defined( $woflags ) && $d->Flags & $woflags );
+	foreach my $d ( @deps ) {
 		my $o = $d->TargetObj;
 		$o->ValidateRelations( %args );
 	}

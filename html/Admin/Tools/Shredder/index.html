@@ -1,0 +1,98 @@
+<%ARGS>
+$Plugin => ''
+$Search => ''
+$Wipeout => ''
+@WipeoutObject => ()
+</%ARGS>
+<& /Admin/Elements/Header, Title => $title &>
+<& /Admin/Elements/ToolTabs,
+	current_tab => 'Admin/Tools/Shredder',
+	current_subtab => 'Admin/Tools/Shredder',
+	Title => $title,
+&>
+<form action="Shredder" method="GET">
+<div id="shredder-select-plugin">
+<& /Elements/ListActions, actions => $messages{'Errors'} &>
+<& /Elements/ListActions, actions => $messages{'Success'} &>
+<& Elements/SelectPlugin, Plugin => $Plugin, %ARGS &>
+<div id="shredder-submit-button" class="<% $Plugin? '': 'hidden' %>">
+<& /Elements/Submit, Name => 'Search', Label => loc('Search') &>
+</div>
+</div>
+<br />
+% if( $Search || $Wipeout ) {
+<& Elements/SelectObjects, Objects => \@objs &>
+% }
+</form>
+<%INIT>
+
+require RTx::Shredder;
+my $title = loc('Shredder');
+my %messages = ( Errors => [], Success => [] );
+my ($plugin_obj, @objs);
+if( $Plugin ) { { # use additional block({}) to effectively exit block on errors
+	use RTx::Shredder::Plugin;
+	$plugin_obj = new RTx::Shredder::Plugin;
+	my( $status, $msg ) = $plugin_obj->LoadByName( $Plugin );
+	unless( $status ) {
+		push @{ $messages{Errors} }, $msg;
+		$Search = '';
+		last;
+	}
+
+	my %args;
+	foreach my $k( keys %ARGS ) {
+		next unless $k =~ /^\Q$Plugin\E:(.*)$/;
+		$args{ $1 } = $ARGS{$k};
+	}
+	( $status, $msg ) = $plugin_obj->HasSupportForArgs( keys %args );
+	unless( $status ) {
+		push @{ $messages{Errors} }, $msg;
+		$Search = '';
+		last;
+	}
+
+	($status, $msg) = $plugin_obj->TestArgs( %args );
+	unless( $status ) {
+		push @{ $messages{Errors} }, $msg;
+		$Search = '';
+		last;
+	}
+} }
+
+if( $Plugin && $Wipeout ) { { # use additional block({}) to effectively exit block on errors
+	my $fh = RTx::Shredder->GetFileFromStorage();
+	my $shredder = new RTx::Shredder( sqldump => $fh );
+	$shredder->PutObjects( Objects => \@WipeoutObject );
+	my ($status, $msg) = $plugin_obj->SetResolvers( Shredder => $shredder );
+	unless( $status ) {
+		push @{ $messages{Errors} }, $msg;
+		$Search = ''; @objs = ();
+		last;
+	}
+	$shredder->Wipeout;
+	
+	push @{ $messages{Success} }, 'objects were successfuly removed';
+} }
+
+if( $Plugin && ( $Search || $Wipeout ) ) { { # use additional block({}) to effectively exit block on errors
+	my $status;
+	($status, @objs) = $plugin_obj->Run;
+	unless( $status ) {
+		push @{ $messages{Errors} }, $objs[0];
+		$Search = ''; @objs = ();
+		last;
+	}
+	push @{ $messages{Success} }, 'executed plugin successfuly';
+
+	my $shredder = new RTx::Shredder;
+	foreach my $o( splice @objs ) {
+		push @objs, $shredder->CastObjectsToRecords( Objects => $o );
+	}
+	unless( @objs ) {
+		push @{ $messages{Success} }, 'plugin returned empty list';
+	} else {
+		push @{ $messages{Success} }, 'see object list below';
+	}
+} }
+</%INIT>

@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-rtx-shredder - Script which wipe out tickets from DB
+rtx-shredder - Script which wipe out tickets from RT DB
 
 =head1 SYNOPSIS
 
-  rtx-shredder --force --sqldump unshred.sql --object Ticket-1
+  rtx-shredder --sqldump unshred.sql --object Ticket-1
 
 =head1 DESCRIPTION
 
@@ -21,19 +21,36 @@ should delete.
 
 =head1 OPTIONS
 
-=head2 --object
-
-Object you want to delete. Foramt is ObjectName-#id, for example
-Ticket-1 or Transaction-10.
-
-=head2 --force
-
-Script doesn't ask any questions.
-
 =head2 --sqldump <filename>
 
 Outputs INSERT queiries into file. This dump can be used to restore data
 after wiping out.
+
+By default creates files
+F<< <RT_home>/var/data/RTx-Shredder/<ISO_date>-XXXX.sql >>
+
+=head2 --object <object name>-<object id>
+
+Object you want to delete.
+
+Examples: Ticket-12, Transaction-10 or Attachment-155
+
+=head2 --plugin <plugin name>[=<arg>,<val>[;<arg>,<val>]...]
+
+You can use plugins to select RT objects with variouse conditions.
+See also --plugin list and --plugin help options.
+
+=head2 --plugin list
+
+Output list of the available plugins.
+
+=head2 --plugin help-<plugin name>
+
+Outputs help for specified plugin.
+
+=head2 --force
+
+Script doesn't ask any questions.
 
 =head1 SEE ALSO
 
@@ -47,61 +64,52 @@ use warnings FATAL => 'all';
 ### after: use lib qw(@RT_LIB_PATH@);
 use lib qw(/opt/rt3/local/lib /opt/rt3/lib);
 
+use RTx::Shredder ();
 use Getopt::Long qw(GetOptions);
-use File::Spec;
+use File::Spec ();
 
-use constant PAGE_SIZE => 100;
+use RTx::Shredder::Plugin ();
+# prefetch list of plugins
+our %plugins = RTx::Shredder::Plugin->List;
 
 our %opt;
 parse_args();
-
-unless( $opt{'object'} ) {
-	usage();
-}
 
 unless( $opt{'sqldump'} ) {
 	print STDERR "WARNING: It's strongly recommended to use '--sqldump <filename>' option\n";
 	unless( $opt{'force'} ) {
 		exit(0) unless prompt_yN( "Do you want to proceed?" );
 	}
+} else {
+	# XXX: we should print file name here
 }
 
-use RTx::Shredder;
 RTx::Shredder::Init( %opt );
-
-my $obj = load_object( $opt{'object'} );
-
-print $obj->_AsString ." would be deleted.\n";
-exit(0) unless $opt{'force'} || prompt_yN( "Do you want to proceed?" );
-
 my $shredder = new RTx::Shredder( %opt );
-$shredder->PutObject( Object => $obj );
+
+my @objs = ();
+push @objs, cast_objects( $opt{'object'} ) if $opt{'object'};
+push @objs, process_plugins( $shredder );
+prompt_delete_objs( \@objs ) unless $opt{'force'};
+
+$shredder->PutObjects( Objects => $_ ) foreach @objs;
 $shredder->Wipeout;
 
-# my $tickets = RT::Tickets->new( $RT::SystemUser );
-# $tickets->{'allow_deleted_search'} = 1;
-# $tickets->LimitStatus( VALUE => 'deleted' );
-# $tickets->LimitLastUpdated( OPERATOR => '<', VALUE => "$date 00:00");
-# 
-# my $total = $tickets->Count;
-# 
-# unless( $total ) {
-# 	print "Tickets list is empty.\n";
-# 	exit(0);
-# } else {
-# 	print "$total tickets would be wiped out.\n";
-# 	exit(0) unless $opt{'force'} || prompt_yN( "Do you want to proceed?" );
-# }
-# 
-# $tickets->RowsPerPage( PAGE_SIZE );
-# 
-# do {
-# 	my $shredder = new RTx::Shredder( %opt );
-# 	while( my $t = $tickets->Next ) {
-# 		$shredder->PutObject( Object => $t );
-# 	}
-# 	$shredder->Wipeout;
-# } while( $tickets->NextPage < $total );
+
+sub prompt_delete_objs
+{
+	my( $objs ) = @_;
+	unless( @$objs ) {
+		print "Objects list is empty, try refine search options\n";
+		exit 0;
+	}
+	my $list = "Next objects would be deleted:\n";
+	foreach my $o( @$objs ) {
+		$list .= "\t". $o->_AsString ." object\n";
+	}
+	print $list;
+	exit(0) unless prompt_yN( "Do you want to proceed?" );
+}
 
 sub prompt_yN
 {
@@ -115,76 +123,114 @@ sub prompt_yN
 
 sub usage
 {
-	print <<END;
-	usage: $0 [--force] [--sqldump <fpath>] --object <name>-<id>
-
-	see also `perldoc rtx-shredder` for more info.
-END
+	require RTx::Shredder::POD;
+	RTx::Shredder::POD::shredder_cli( $0, \*STDOUT );
 	exit 1;
-
 }
 
 sub parse_args
 {
 	my $tmp;
 	Getopt::Long::Configure( "pass_through" );
+	my @objs = ();
+	if( GetOptions( 'object=s' => \@objs ) && @objs ) {
+		$opt{'object'} = \@objs;
+	}
+	my @plugins = ();
+	if( GetOptions( 'plugin=s' => \@plugins ) && @plugins ) {
+		$opt{'plugin'} = \@plugins;
+		foreach my $str( @plugins ) {
+			if( $str =~ /^\s*list\s*$/ ) {
+				show_plugin_list();
+			} elsif( $str =~ /^\s*help-(\w+)\s*$/ ) {
+				show_plugin_help( $1 );
+			} elsif( $str =~ /^(\w+)(=.*)?$/ && !$plugins{$1} ) {
+				print "Couldn't find plugin '$1'\n";
+				show_plugin_list();
+			}
+		}
+	}
+
+	# other options make no sense without previouse
+	usage() unless keys %opt;
+
 	if( GetOptions( 'force' => \$tmp ) && $tmp ) {
 		$opt{'force'}++;
 	}
 	$tmp = undef;
 	if( GetOptions( 'sqldump=s' => \$tmp ) && $tmp ) {
-		$opt{'sqldump'} = get_sqldump_fh( $tmp );
-	}
-	$tmp = undef;
-	if( GetOptions( 'object=s' => \$tmp ) && $tmp ) {
-		$opt{'object'} = $tmp;
+		$opt{'sqldump'} = eval { RTx::Shredder->GetFileHandle( $tmp ) };
+		if( $@ ) {
+			print "Couldn't open file for SQL dump\n";
+			print "Error: $@";
+			exit(1);
+		}
+	} else {
+		local $@;
+		$opt{'sqldump'} = eval { RTx::Shredder->GetFileFromStorage };
+		if( $@ ) {
+			print "Couldn't open file for SQL dump\n";
+			print "Error: $@";
+		}
 	}
 	return;
 }
 
-sub get_sqldump_fh
+sub cast_objects
 {
-	my $file = shift;
-	if( -f $file ) {
-		unless( -w $file ) {
-			die "File '$file' exists, but is read-only";
-		}
-	} elsif( !-e $file ) {
-		unless( File::Spec->file_name_is_absolute( $file ) ) {
-			$file = File::Spec->rel2abs( $file ) ;
-		}
-		#file base dir
-		my $dir = File::Spec->join( (File::Spec->splitpath( $file ))[0,1] );
-		unless( -e $dir && -d _) {
-			die "Base directory '$dir' for file '$file' doesn't exist";
-		}
-		unless( -w $dir ) {
-			die "Base directory '$dir' is not writable";
-		}
-	} else {
-		die "'$file' is not regular file";
-	}
-	if( -s $file ) {
-		print STDERR "WARNING: file '$file' is not empty, content would be overwriten\n";
-		exit(0) unless $opt{force} || prompt_yN( "Do you want to proceed?" );
-	}
-	open my $fh, ">$file" or die "Couldn't open '$file' for write: $!";
-	return $fh;
+	return RTx::Shredder->CastObjectsToRecords( Objects => $_[0] );
 }
 
-sub load_object
+sub process_plugins
 {
-	my $desc = shift;
-	my ($class, $id) = split /-/, $desc;
-	$class = 'RT::'. $class;
-	eval "require $class";
-	die "Couldn't load '$class' module" if $@;
-	my $obj = $class->new( $RT::SystemUser );
-	die "Couldn't construct new '$class' object" unless $obj;
-	$obj->Load( $id );
-	die "Couldn't load '$class' object by id '$id'" unless $obj->id;
-	die "Loaded object has different id" unless( $id eq $obj->id );
-	return $obj;
+	my @res;
+	my $shredder = shift;
+	foreach my $str( @{ $opt{'plugin'} } ) {
+		my $plugin = new RTx::Shredder::Plugin;
+		my( $status, $msg ) = $plugin->LoadByString( $str );
+		unless( $status ) {
+			print STDERR "Couldn't load plugin\n";
+			print STDERR "Error: $msg\n";
+			exit(1);
+		}
+		
+		my @objs = ();
+		($status, @objs) = $plugin->Run;
+		unless( $status ) {
+			print STDERR "Couldn't run plugin\n";
+			print STDERR "Error: $objs[1]\n";
+			exit(1);
+		}
+
+		($status, $msg) = $plugin->SetResolvers( Shredder => $shredder );
+		unless( $status ) {
+			print STDERR "Couldn't set conflicts resolver\n";
+			print STDERR "Error: $msg\n";
+			exit(1);
+		}
+		push @res, @objs;
+	}
+	return cast_objects( \@res );
+}
+
+sub show_plugin_list
+{
+	print "Plugins list:\n";
+	print "\t$_\n" foreach( grep !/^Base$/, keys %plugins );
+	exit(1);
+}
+
+sub show_plugin_help
+{
+	my( $name ) = @_;
+	require RTx::Shredder::POD;
+	unless( $plugins{ $name } ) {
+		print "Couldn't find plugin '$name'\n";
+		show_plugin_list();
+	}
+	RTx::Shredder::POD::plugin_cli( $plugins{'Base'}, \*STDOUT, 1 );
+	RTx::Shredder::POD::plugin_cli( $plugins{ $name }, \*STDOUT );
+	exit(1);
 }
 
 exit(0);

@@ -41,7 +41,12 @@ sub __DependsOn
 	my $list = [];
 
 # Principal
-	push( @$list, $self->PrincipalObj );
+	$deps->_PushDependency(
+			BaseObj => $self,
+			Flags => DEPENDS_ON | WIPE_AFTER,
+			TargetObj => $self->PrincipalObj,
+			Shredder => $args{'Shredder'}
+		);
 
 # ACL equivalence group
 # don't use LoadACLEquivalenceGroup cause it may not exists any more
@@ -54,19 +59,30 @@ sub __DependsOn
 	$objs = RT::GroupMembers->new( $self->CurrentUser );
 	$objs->Limit( FIELD => 'MemberId', VALUE => $self->Id );
 	push( @$list, $objs );
-# deep memebership
-	$objs = RT::CachedGroupMembers->new( $self->CurrentUser );
-	$objs->Limit( FIELD => 'MemberId', VALUE => $self->Id );
-	push( @$list, $objs );
-	
-
-# TODO: Almost all objects has Creator, LastUpdatedBy and etc. fields
-# which are references on users(Principal actualy)
 
 	$deps->_PushDependencies(
 			BaseObj => $self,
 			Flags => DEPENDS_ON,
 			TargetObjs => $list,
+			Shredder => $args{'Shredder'}
+		);
+
+# TODO: Almost all objects has Creator, LastUpdatedBy and etc. fields
+# which are references on users(Principal actualy)
+	my @var_objs;
+	foreach( @OBJECTS ) {
+		my $class = "RT::$_";
+		foreach my $method ( qw(Creator LastUpdatedBy) ) {
+			my $objs = $class->new( $self->CurrentUser );
+			next unless $objs->NewItem->_Accessible( $method => 'read' );
+			$objs->Limit( FIELD => $method, VALUE => $self->id );
+			push @var_objs, $objs;
+		}
+	}
+	$deps->_PushDependencies(
+			BaseObj => $self,
+			Flags => DEPENDS_ON | VARIABLE,
+			TargetObjs => \@var_objs,
 			Shredder => $args{'Shredder'}
 		);
 

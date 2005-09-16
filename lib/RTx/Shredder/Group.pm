@@ -35,9 +35,16 @@ sub __DependsOn
 
 # User is inconsistent without own Equivalence group
 	if( $self->Domain eq 'ACLEquivalence' ) {
+		# delete user entry after ACL equiv group
+		# in other case we will get deep recursion
 		my $objs = RT::User->new($self->CurrentUser);
 		$objs->Load( $self->Instance );
-		push( @$list, $objs );
+		$deps->_PushDependency(
+				BaseObj => $self,
+				Flags => DEPENDS_ON | WIPE_AFTER,
+				TargetObj => $objs,
+				Shredder => $args{'Shredder'}
+			);
 	}
 
 # Principal

@@ -190,6 +190,7 @@ sub Wipeout
 	}
 
 	my $rec = $args{'Shredder'}->PutObject( Object => $self );
+	$rec->{'State'} |= FOR_WIPING;
 	return if( $rec->{'State'} & WIPED );
 	$self = $rec->{'Object'};
 
@@ -205,9 +206,17 @@ sub _Wipeout
 
 	my $deps = $self->Dependencies( %args );
 
-	$deps->Wipeout( WithoutFlags => WIPE_AFTER, %args );
+	my @variable = $deps->List( WithFlags => VARIABLE );
+	for my $d( @variable ) {
+		$d->ResolveVariable( %args );
+	}
+
+	$deps->Wipeout( WithoutFlags => WIPE_AFTER | VARIABLE, %args );
 	$self->__Wipeout( %args );
-	$deps->Wipeout( WithFlags => WIPE_AFTER, %args );
+	$deps->Wipeout( WithFlags => WIPE_AFTER,
+			WithoutFlags => VARIABLE,
+			%args,
+		      );
 
 	return;
 }
