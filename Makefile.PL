@@ -3,7 +3,7 @@ use inc::Module::Install;
 
 $ENV{'WITH_SUBDIRS'} = 'sbin,lib,html';
 RTx			('Shredder');
-author			('Ruslan U. Zakirov <cubic@wildgate.miee.ru>');
+author			('Ruslan U. Zakirov <Ruslan.Zakirov@gmail.com>');
 license			('perl');
 
 requires		('Getopt::Long');

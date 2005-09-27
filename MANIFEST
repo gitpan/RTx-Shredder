@@ -60,6 +60,7 @@ Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 META.yml
+patches/3.4.0,1-search_deleted.patch
 README
 sbin/rtx-shredder
 sbin/rtx-validator

@@ -538,7 +538,7 @@ Function that return debug notes.
 
 =head3 note_on_fail
 
-Returns note about debug info you can find if test file fails.
+Returns note about debug info you can find if test failed.
 
 =cut
 
@@ -554,6 +554,21 @@ There is should be:
 	$name.db - latest RT DB sed while testing
 	$name.*.db - savepoint databases
 See also perldoc t/utils.pl to know how to use this info.
+END
+}
+
+=head3 note_not_patched
+
+Returns note about patch if RT looks like not patched.
+
+=cut
+
+sub note_not_patched
+{
+	return <<END;
+Couldn't find deleted ticket, may be you didn't patch
+your RT. Please, read README about how, when and why you
+have to patch your RT.
 END
 }
 

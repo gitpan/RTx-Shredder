@@ -1,8 +1,12 @@
 <style type="text/css"><!--
 .hidden { display: none }
+
 .shredder-help { background-color: #ffe99d; margin: 1em 2em; padding: 1em; border-style: solid; border-color: black; border-width: 1px }
+.pod-sequence-C { background-color: #eee }
+
 .shredder-form { line-height: 3em }
 .shredder-form span { margin-left: 1em; margin-right: 1em }
+
 #shredder-select-plugin { border-style: solid; border-color: black; border-width: 1px }
 #shredder-plugin-results { border-style: solid; border-color: black; border-width: 1px; margin-top: 1em; }
 #shredder-plugin-results input { margin-left: 1em; }
@@ -53,6 +57,24 @@ function showShredderPluginTab( plugin )
 		showElement( document.getElementById('shredder-submit-button') );
 	} else {
 		hideElement( document.getElementById('shredder-submit-button') );
+	}
+}
+function checkAllObjects()
+{
+	var check = document.getElementById('shredder-select-all-objects-checkbox').checked;
+	var elements = document.getElementById('shredder-search-form').elements;
+	for( var i = 0; i < elements.length; i++ ) {
+		if( elements[i].name != 'WipeoutObject' ) {
+			continue;
+		}
+		if( elements[i].type != 'checkbox' ) {
+			continue;
+		}
+		if( check ) {
+			elements[i].checked = true;
+		} else {
+			elements[i].checked = false;
+		}
 	}
 }
 </script>

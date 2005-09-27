@@ -7,6 +7,10 @@ rtx-shredder - Script which wipe out tickets from RT DB
 =head1 SYNOPSIS
 
   rtx-shredder --sqldump unshred.sql --object Ticket-1
+  
+  rtx-shredder --plugin list
+  rtx-shredder --plugin help-Tickets
+  rtx-shredder --plugin 'Tickets=status,deleted;queue,general'
 
 =head1 DESCRIPTION
 
@@ -35,7 +39,7 @@ Object you want to delete.
 
 Examples: Ticket-12, Transaction-10 or Attachment-155
 
-=head2 --plugin <plugin name>[=<arg>,<val>[;<arg>,<val>]...]
+=head2 --plugin '<plugin name>[=<arg>,<val>[;<arg>,<val>]...]'
 
 You can use plugins to select RT objects with variouse conditions.
 See also --plugin list and --plugin help options.

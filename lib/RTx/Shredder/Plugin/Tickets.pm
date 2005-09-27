@@ -26,7 +26,7 @@ Search tickets with specified status only.
 =head2 update_before - date
 
 Search tickets that were updated before some date.
-Example: '2003-12-31 24:59'
+Example: '2003-12-31 23:59:59'
 
 =cut
 
@@ -79,6 +79,7 @@ sub Run
 	if( $self->{'opt'}{'limit'} ) {
 		$objs->RowsPerPage( $self->{'opt'}{'limit'} );
 	}
+	$objs->OrderByCols( { FIELD => 'id', ORDER => 'ASC' } );
 	return (1, $objs);
 }
 

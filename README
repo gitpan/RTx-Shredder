@@ -22,6 +22,16 @@ NOTE: I didn't test with non standard locations of RT.
 If you have problems please send me note about you layout and also
 output of `perl Makefile.PL` command.
 
+3) Patch RT 3.4.0 and 3.4.1
+
+RT core API limit searches on deleted tickets. I wrote patch that should be applied to RT.
+Patch is shipped with distro under patches/ directory. You can apply it with next commands:
+
+	cd /path/to/rt/dir
+	cat /path/to/patch/file | patch -p0
+
+NOTE: RT 3.4.2 and greater has this patch in the mainline.
+
 4) Testing
 
 See `perldoc t/utils.pl` for more info about testing shredder distribution.

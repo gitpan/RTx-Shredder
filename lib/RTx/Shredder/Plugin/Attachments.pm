@@ -18,11 +18,9 @@ sub Type { return 'search' }
 
 Search only file attachments.
 
-=head2 file_mask - file name mask
+=head2 file - mask
 
 Search files with specific file name only.
-'*' - any combination of characters,
-'?' - any character.
 
 Example: '*.xl?' or '*.gif'
 
@@ -34,17 +32,18 @@ kilobytes or megabytes.
 
 =cut
 
-sub SupportArgs { return $_[0]->SUPER::SupportArgs, qw(files_only file_mask longer) }
+sub SupportArgs { return $_[0]->SUPER::SupportArgs, qw(files_only file longer) }
 
 sub TestArgs
 {
 	my $self = shift;
 	my %args = @_;
 	my $queue;
-	if( $args{'file_mask'} ) {
-		unless( $args{'file_mask'} =~ /^[\w\. *?]+$/) {
-			return( 0, "Files mask '$args{file_mask}' has invalid characters" );
+	if( $args{'file'} ) {
+		unless( $args{'file'} =~ /^[\w\. *?]+$/) {
+			return( 0, "Files mask '$args{file}' has invalid characters" );
 		}
+		$args{'file'} = $self->ConvertMaskToSQL( $args{'file'} );
 	}
 	if( $args{'longer'} ) {
 		unless( $args{'longer'} =~ /^\d+\s*[mk]?$/i ) {
@@ -59,11 +58,8 @@ sub Run
 	my $self = shift;
 	my @conditions = ();
 	my @values = ();
-	if( $self->{'opt'}{'file_mask'} ) {
-		my $mask = $self->{'opt'}{'file_mask'};
-		$mask =~ s/[^\w\. *?]//g;
-		$mask =~ s/\*/%/g;
-		$mask =~ s/\?/_/g;
+	if( $self->{'opt'}{'file'} ) {
+		my $mask = $self->{'opt'}{'file'};
 		push @conditions, "( Filename LIKE ? )";
 		push @values, $mask;
 	}

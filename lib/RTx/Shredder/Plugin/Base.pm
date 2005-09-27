@@ -23,17 +23,59 @@ sub _Init
 	$self->{'opt'} = { @_ };
 }
 
+=head1 USAGE
+
+=head2 masks
+
+If any argument is marked with keyword C<mask> then it means
+that this argument support two special characters:
+
+1) C<*> matches any non empty sequence of the characters.
+For example C<*@example.com> will match any email address in
+C<example.com> domain.
+
+2) C<?> matches exactly one character.
+For example C<????> will match any string four characters long.
+
 =head1 ARGUMENTS
 
 Arguments which all plugins support.
 
 =head2 limit - unsigned integer
 
-Allow you to limit search results.
+Allow you to limit search results. B<< Default value is C<10> >>.
+
+=head1 METHODS
+
+=head2 for subclassing in plugins
+
+=head3 Type - is not supported yet
+
+See F<Todo> for more info.
+
+=cut
+
+sub Type { return '' }
+
+=head3 SupportArgs
+
+Takes nothing.
+Returns list of the supported plugin arguments.
+
+Base class returns list of the arguments which all
+classes B<must> support.
 
 =cut
 
 sub SupportArgs { return qw(limit) }
+
+=head3 HasSupportForArgs
+
+Takes list of the argument names.
+Returns true if all arguments are supported by plugin
+and returns C<(0, $msg)> in other case.
+
+=cut
 
 sub HasSupportForArgs
 {
@@ -46,6 +88,18 @@ sub HasSupportForArgs
 	return( 1 ) unless @unsupported;
 	return( 0, "Plugin doesn't support argument(s): @unsupported" ) if @unsupported;
 }
+
+=head3 TestArgs
+
+Takes hash with arguments and thier values and returns true
+if all values pass testing otherwise returns C<(0, $msg)>.
+
+Stores arguments hash in C<$self->{'opt'}>, you can access this hash
+from C<Run> method.
+
+Method should be subclassed if plugin support non standard arguments.
+
+=cut
 
 sub TestArgs
 {
@@ -65,11 +119,38 @@ sub TestArgs
 	return 1;
 }
 
+=head3 Run
 
-sub Type { return '' }
+Takes no arguments.
+Executes plugin and return C<(1, @objs)> on success or
+C<(0, $msg)> if error had happenned.
+
+Method B<must> be subclassed, this class always returns error.
+
+Method B<must> be called only after C<TestArgs> method in other
+case values of the arguments are not available.
+
+=cut
 
 sub Run { return (0, "This is abstract plugin, you couldn't use it directly") }
 
 sub SetResolvers { return (1) }
+
+=head2 utils
+
+=head3 ConvertMaskToSQL
+
+Takes one argument - mask with C<*> and C<?> chars and
+return mask SQL chars.
+
+=cut
+
+sub ConvertMaskToSQL {
+	my $self = shift;
+	my $mask = shift || '';
+	$mask =~ s/\*/%/g;
+	$mask =~ s/\?/_/g;
+	return $mask;
+}
 
 1;

@@ -8,7 +8,7 @@ sub plugin_html
 {
 	my ($file, $out_fh) = @_;
 	my $parser = new RTx::Shredder::POD::HTML;
-	$parser->select('ARGUMENTS');
+	$parser->select('ARGUMENTS', 'USAGE');
 	$parser->parse_from_file( $file, $out_fh );
 }
 
@@ -18,7 +18,7 @@ sub plugin_cli
 	use Pod::PlainText;
 	local @Pod::PlainText::ISA = ('Pod::Select', @Pod::PlainText::ISA);
 	my $parser = new Pod::PlainText;
-	$parser->select('SYNOPSIS', 'ARGUMENTS');
+	$parser->select('SYNOPSIS', 'ARGUMENTS', 'USAGE');
 	$parser->add_selection('NAME') unless $no_name;
 	$parser->parse_from_file( $file, $out_fh );
 }

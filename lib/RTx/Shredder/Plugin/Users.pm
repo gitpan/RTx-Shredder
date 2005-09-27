@@ -16,9 +16,17 @@ sub Type { return 'search' }
 
 =head2 status - string
 
-=head2 name_mask - name address mask
+Status argument allow you to limit result set to C<disabled>,
+C<enabled> or C<any> users.
+B<< Default value is C<disabled>. >>
 
-=head2 email_mask - email address mask
+=head2 name - mask
+
+User name mask.
+
+=head2 email - mask
+
+Email address mask.
 
 =head2 replace_relations - user identifier
 
@@ -35,7 +43,7 @@ This argument could be user id or name.
 sub SupportArgs
 {
 	return $_[0]->SUPER::SupportArgs,
-	       qw(status name_mask email_mask replace_relations);
+	       qw(status name email replace_relations);
 }
 
 sub TestArgs
@@ -46,16 +54,20 @@ sub TestArgs
 		unless( $args{'status'} =~ /^(disabled|enabled|any)$/i ) {
 			return (0, "Status '$args{'status'}' is unsupported.");
 		}
+	} else {
+		$args{'status'} = 'disabled';
 	}
-	if( $args{'email_mask'} ) {
-		unless( $args{'email_mask'} =~ /^[\w\.@?*]+$/ ) {
-			return (0, "Invalid characters in email_mask '$args{'email_mask'}'");
+	if( $args{'email'} ) {
+		unless( $args{'email'} =~ /^[\w\.@?*]+$/ ) {
+			return (0, "Invalid characters in email '$args{'email'}'");
 		}
+		$args{'email'} = $self->ConvertMaskToSQL( $args{'email'} );
 	}
-	if( $args{'name_mask'} ) {
-		unless( $args{'name_mask'} =~ /^[\w?*]+$/ ) {
-			return (0, "Invalid characters in name_mask '$args{'name_mask'}'");
+	if( $args{'name'} ) {
+		unless( $args{'name'} =~ /^[\w?*]+$/ ) {
+			return (0, "Invalid characters in name '$args{'name'}'");
 		}
+		$args{'name'} = $self->ConvertMaskToSQL( $args{'name'} );
 	}
 	if( $args{'replace_relations'} ) {
 		my $uid = $args{'replace_relations'};
@@ -89,24 +101,16 @@ sub Run
 			$objs->LimitToEnabled;
 		}
 	}
-	if( $self->{'opt'}{'email_mask'} ) {
-		my $mask = $self->{'opt'}{'email_mask'};
-		$mask =~ s/[^\w\.@?*]//g;
-		$mask =~ s/\*/%/g;
-		$mask =~ s/\?/_/g;
+	if( $self->{'opt'}{'email'} ) {
 		$objs->Limit( FIELD => 'EmailAddress',
 			      OPERATOR => 'MATCHES',
-			      VALUE => $mask,
+			      VALUE => $self->{'opt'}{'email'},
 			    );
 	}
-	if( $self->{'opt'}{'name_mask'} ) {
-		my $mask = $self->{'opt'}{'email_mask'};
-		$mask =~ s/[^\w?*]//g;
-		$mask =~ s/\*/%/g;
-		$mask =~ s/\?/_/g;
+	if( $self->{'opt'}{'name'} ) {
 		$objs->Limit( FIELD => 'Name',
 			      OPERATOR => 'MATCHES',
-			      VALUE => $mask,
+			      VALUE => $self->{'opt'}{'name'},
 			    );
 	}
 	if( $self->{'opt'}{'limit'} ) {

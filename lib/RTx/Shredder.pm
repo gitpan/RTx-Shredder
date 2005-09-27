@@ -130,7 +130,7 @@ L<rtx-shredder>, L<rtx-validator>
 
 =cut
 
-our $VERSION = '0.02_01';
+our $VERSION = '0.02_02';
 use POSIX ();
 use File::Spec ();
 
