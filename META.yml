@@ -15,7 +15,6 @@ build_requires:
 requires:
   Getopt::Long: 0
   Exception::Class: 0
-  IO::String: 0
   Pod::Parser: 0
 no_index:
   directory:

@@ -1,5 +1,6 @@
 package RTx::Shredder;
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -82,14 +83,15 @@ then it's better to stop http server.
 =head2 Foreign keys
 
 This two keys don't allow delete Tickets because of bug in MySQL
-	ALTER TABLE Tickets ADD FOREIGN KEY (EffectiveId) REFERENCES Tickets(id);
-	ALTER TABLE CachedGroupMembers ADD FOREIGN KEY (Via) REFERENCES CachedGroupMembers(id);
+
+  ALTER TABLE Tickets ADD FOREIGN KEY (EffectiveId) REFERENCES Tickets(id);
+  ALTER TABLE CachedGroupMembers ADD FOREIGN KEY (Via) REFERENCES CachedGroupMembers(id);
 
 L<http://bugs.mysql.com/bug.php?id=4042>
 
 =head1 TESTING
 
-Read more about testing in L<t/utils.pl>.
+Read more about testing in F<t/utils.pl>.
 
 =head1 BUGS AND HOW TO CONTRIBUTE
 
@@ -130,7 +132,7 @@ L<rtx-shredder>, L<rtx-validator>
 
 =cut
 
-our $VERSION = '0.02_02';
+our $VERSION = '0.03';
 use POSIX ();
 use File::Spec ();
 
@@ -168,6 +170,27 @@ BEGIN {
 	require RTx::Shredder::User;
 }
 
+our @SUPPORTED_OBJECTS = qw(
+	ACE
+	Attachment
+	CachedGroupMember
+	CustomField
+	CustomFieldValue
+	GroupMember
+	Group
+	Link
+	Principal
+	Queue
+	Scrip
+	ScripAction
+	ScripCondition
+	Template
+	ObjectCustomFieldValue
+	Ticket
+	Transaction
+	User
+);
+
 our %opt = ();
 
 sub Init
@@ -204,6 +227,10 @@ sub CastObjectsToRecords
 
 	my @res;
 	my $targets = delete $args{'Objects'};
+	unless( $targets ) {
+		RTx::Shredder::Exception->throw( "Undefined Objects argument" );
+	}
+
 	if( UNIVERSAL::isa( $targets, 'RT::SearchBuilder' ) ) {
 		while( my $tmp = $targets->Next ) { push @res, $tmp };
 	} elsif ( UNIVERSAL::isa( $targets, 'RT::Record' ) ) {

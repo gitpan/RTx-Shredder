@@ -6,11 +6,11 @@ RTx			('Shredder');
 author			('Ruslan U. Zakirov <Ruslan.Zakirov@gmail.com>');
 license			('perl');
 
+requires		('RT', 3.4);
+
+requires		('DBIx::SearchBuilder', 1.31);
 requires		('Getopt::Long');
 requires		('Exception::Class');
-requires		('RT', 3.4);
-requires		('IO::String');
-requires		('Pod::Parser');
 
 build_requires		('DBD::SQLite');
 build_requires		('Test::More');

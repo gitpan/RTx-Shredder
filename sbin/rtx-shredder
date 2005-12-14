@@ -6,11 +6,12 @@ rtx-shredder - Script which wipe out tickets from RT DB
 
 =head1 SYNOPSIS
 
-  rtx-shredder --sqldump unshred.sql --object Ticket-1
-  
   rtx-shredder --plugin list
   rtx-shredder --plugin help-Tickets
   rtx-shredder --plugin 'Tickets=status,deleted;queue,general'
+
+  rtx-shredder --sqldump unshred.sql --plugin ...
+  rtx-shredder --force --plugin ...
 
 =head1 DESCRIPTION
 
@@ -33,11 +34,9 @@ after wiping out.
 By default creates files
 F<< <RT_home>/var/data/RTx-Shredder/<ISO_date>-XXXX.sql >>
 
-=head2 --object <object name>-<object id>
+=head2 --object (DEPRECATED)
 
-Object you want to delete.
-
-Examples: Ticket-12, Transaction-10 or Attachment-155
+Option has been deprecated, use plugin C<Objects> instead.
 
 =head2 --plugin '<plugin name>[=<arg>,<val>[;<arg>,<val>]...]'
 
@@ -90,15 +89,11 @@ unless( $opt{'sqldump'} ) {
 
 RTx::Shredder::Init( %opt );
 my $shredder = new RTx::Shredder( %opt );
-
-my @objs = ();
-push @objs, cast_objects( $opt{'object'} ) if $opt{'object'};
-push @objs, process_plugins( $shredder );
+my @objs = process_plugins( $shredder );
 prompt_delete_objs( \@objs ) unless $opt{'force'};
 
 $shredder->PutObjects( Objects => $_ ) foreach @objs;
 $shredder->Wipeout;
-
 
 sub prompt_delete_objs
 {
@@ -138,8 +133,10 @@ sub parse_args
 	Getopt::Long::Configure( "pass_through" );
 	my @objs = ();
 	if( GetOptions( 'object=s' => \@objs ) && @objs ) {
-		$opt{'object'} = \@objs;
+		print STDERR "Option --object had been deprecated, use plugin 'Objects' instead\n";
+        exit(1);
 	}
+
 	my @plugins = ();
 	if( GetOptions( 'plugin=s' => \@plugins ) && @plugins ) {
 		$opt{'plugin'} = \@plugins;

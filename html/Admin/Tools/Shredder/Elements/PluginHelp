@@ -17,10 +17,8 @@ unless( $file ) {
 }
 
 use RTx::Shredder::POD qw();
-use IO::String;
-my $io_handle = new IO::String;
+my $text;
+open my $io_handle, ">:scalar", \$text or die "Can't open scalar for write: $!";
 RTx::Shredder::POD::plugin_html( $file, $io_handle );
-seek($io_handle, 0, 0);
-my $text = do { local $/; <$io_handle> };
 close $io_handle;
 </%INIT>

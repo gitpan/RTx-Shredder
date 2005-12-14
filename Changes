@@ -1,5 +1,10 @@
 Revision history for Perl module RTx::Shredder
 
+v0.02_03
+    * api: mutliple values for the arguments of the plugins
+    * doc: docs in the Plugin class
+    * fea: --object has been deprecated by plugin 'Objects'
+
 v0.02_02
 	* fix: search for users by name fixed
 	* fix: returned patch because RT 3.4.0 and 3.4.1 has no code in mainline

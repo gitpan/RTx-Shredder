@@ -43,6 +43,7 @@ lib/RTx/Shredder/ObjectCustomFieldValue.pm
 lib/RTx/Shredder/Plugin.pm
 lib/RTx/Shredder/Plugin/Attachments.pm
 lib/RTx/Shredder/Plugin/Base.pm
+lib/RTx/Shredder/Plugin/Objects.pm
 lib/RTx/Shredder/Plugin/Tickets.pm
 lib/RTx/Shredder/Plugin/Users.pm
 lib/RTx/Shredder/POD.pm
@@ -67,6 +68,7 @@ sbin/rtx-validator
 t/00load.t
 t/00skeleton.t
 t/01basics.t
+t/01ticket.t
 t/02group_member.t
 t/02user.t
 t/utils.pl
