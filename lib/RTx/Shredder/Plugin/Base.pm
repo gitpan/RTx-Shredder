@@ -11,16 +11,16 @@ RTx::Shredder::Plugin::Base - base class for Shredder plugins.
 
 sub new
 {
-	my $proto = shift;
-	my $self = bless( {}, ref $proto || $proto );
-	$self->_Init( @_ );
-	return $self;
+    my $proto = shift;
+    my $self = bless( {}, ref $proto || $proto );
+    $self->_Init( @_ );
+    return $self;
 }
 
 sub _Init
 {
-	my $self = shift;
-	$self->{'opt'} = { @_ };
+    my $self = shift;
+    $self->{'opt'} = { @_ };
 }
 
 =head1 USAGE
@@ -79,14 +79,14 @@ and returns C<(0, $msg)> in other case.
 
 sub HasSupportForArgs
 {
-	my $self = shift;
-	my @args = @_;
-	my @unsupported = ();
-	foreach my $a( @args ) {
-		push @unsupported, $a unless grep $_ eq $a, $self->SupportArgs;
-	}
-	return( 1 ) unless @unsupported;
-	return( 0, "Plugin doesn't support argument(s): @unsupported" ) if @unsupported;
+    my $self = shift;
+    my @args = @_;
+    my @unsupported = ();
+    foreach my $a( @args ) {
+        push @unsupported, $a unless grep $_ eq $a, $self->SupportArgs;
+    }
+    return( 1 ) unless @unsupported;
+    return( 0, "Plugin doesn't support argument(s): @unsupported" ) if @unsupported;
 }
 
 =head3 TestArgs
@@ -103,20 +103,20 @@ Method should be subclassed if plugin support non standard arguments.
 
 sub TestArgs
 {
-	my $self = shift;
-	my %args = @_;
-	if( defined $args{'limit'} && $args{'limit'} ne '' ) {
-		my $limit = $args{'limit'};
-		$limit =~ s/[^0-9]//g;
-		unless( $args{'limit'} eq $limit ) {
-			return( 0, "Argmument limit should be an unsigned integer");
-		}
-		$args{'limit'} = $limit;
-	} else {
-		$args{'limit'} = 10;
-	}
-	$self->{'opt'} = \%args;
-	return 1;
+    my $self = shift;
+    my %args = @_;
+    if( defined $args{'limit'} && $args{'limit'} ne '' ) {
+        my $limit = $args{'limit'};
+        $limit =~ s/[^0-9]//g;
+        unless( $args{'limit'} eq $limit ) {
+            return( 0, "Argmument limit should be an unsigned integer");
+        }
+        $args{'limit'} = $limit;
+    } else {
+        $args{'limit'} = 10;
+    }
+    $self->{'opt'} = \%args;
+    return 1;
 }
 
 =head3 Run
@@ -146,11 +146,11 @@ return mask SQL chars.
 =cut
 
 sub ConvertMaskToSQL {
-	my $self = shift;
-	my $mask = shift || '';
-	$mask =~ s/\*/%/g;
-	$mask =~ s/\?/_/g;
-	return $mask;
+    my $self = shift;
+    my $mask = shift || '';
+    $mask =~ s/\*/%/g;
+    $mask =~ s/\?/_/g;
+    return $mask;
 }
 
 1;

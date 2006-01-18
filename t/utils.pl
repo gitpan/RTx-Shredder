@@ -88,7 +88,8 @@ sub rewrite_rtconfig
 
 	# generic logging
 	$RT::LogToSyslog = undef;
-	$RT::LogToScreen = undef;
+	$RT::LogToScreen = 'error';
+	$RT::LogStackTraces = '1';
 
 	# logging to standalone file
 	$RT::LogToFile = 'debug';
@@ -127,7 +128,7 @@ sub init_db
 	__insert_data( $fname ) if -f $fname && -r _;
 	RT::Init();
 	$SIG{__WARN__} = sub { $RT::Logger->warning( @_ ); warn @_ };
-	$SIG{__DIE__} = sub { $RT::Logger->crit( @_ ); die @_ };
+	$SIG{__DIE__} = sub { $RT::Logger->crit( @_ ) unless $^S; die @_ };
 }
 
 sub __init_schema
@@ -360,6 +361,21 @@ sub connect_sqlite
 	return DBI->connect("dbi:SQLite:dbname=". shift, "", "");
 }
 
+=head2 SHREDDER
+
+=head3 shredder_new
+
+=cut
+
+sub shredder_new
+{
+    my $obj = new RTx::Shredder;
+    my $file = File::Spec->catfile( tmpdir(), test_name() .'.XXXX.sql' );
+    $obj->SetFile( FileName => $file, FromStorage => 0 );
+    return $obj;
+}
+
+
 =head2 TEST FILES
 
 =head3 test_name
@@ -395,6 +411,8 @@ Creates tmp dir if doesn't exist. Returns tmpdir absolute path.
 
 =cut
 
+sub create_tmpdir { my $n = tmpdir(); File::Path::mkpath( $n );	return $n }
+
 =head3 cleanup_tmp
 
 Delete all tmp files that match C<t/data/tmp/test_name.*> mask.
@@ -404,13 +422,9 @@ See also C<test_name> function.
 
 sub cleanup_tmp
 {
-	my $name = test_name();
-	my $dname = File::Spec->catdir(Cwd::cwd(), qw(t data tmp));
-	my $mask = File::Spec->catfile($dname, $name ) .'.*';
+	my $mask = File::Spec->catfile( tmpdir(), test_name() ) .'.*';
 	return unlink glob($mask);
 }
-
-sub create_tmpdir { my $n = tmpdir(); File::Path::mkpath( $n );	return $n; }
 
 =head2 SAVEPOINTS
 
@@ -445,8 +459,10 @@ sub __cp_db
 {
 	my( $orig, $dest ) = @_;
 	$RT::Handle->dbh->disconnect;
-	# undef Handle to force reconnect
-	undef $RT::Handle;
+	# DIRTY HACK: undef Handles to force reconnect
+	$RT::Handle = undef;
+    %DBIx::SearchBuilder::DBIHandle = ();
+    $DBIx::SearchBuilder::PrevHandle = undef;
 
 	File::Copy::copy( $orig, $dest ) or die "Couldn't copy '$orig' => '$dest': $!";
 	RT::ConnectToDatabase();

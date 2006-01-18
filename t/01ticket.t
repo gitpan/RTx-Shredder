@@ -26,9 +26,9 @@ $tickets->{'allow_deleted_search'} = 1;
 $tickets->LimitStatus( VALUE => 'deleted' );
 is( $tickets->Count, 1, "found one deleted ticket" ) or diag( note_not_patched );
 
-my $shredder = RTx::Shredder->new();
+my $shredder = shredder_new();
 $shredder->PutObjects( Objects => $tickets );
-$shredder->Wipeout();
+$shredder->WipeoutAll;
 
 cmp_deeply( dump_current_and_savepoint('clean'), "current DB equal to savepoint");
 

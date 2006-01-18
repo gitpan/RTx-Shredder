@@ -35,7 +35,7 @@ RTx::Shredder::Plugin - interface to access shredder plugins
 
 =head2 new
 
-Object constructor, returns new object. Takes optional hash 
+Object constructor, returns new object. Takes optional hash
 as arguments, it's not required and this class doesn't use it,
 but plugins could define some arguments and can handle them
 after your've load it.
@@ -44,17 +44,17 @@ after your've load it.
 
 sub new
 {
-	my $proto = shift;
-	my $self = bless( {}, ref $proto || $proto );
-	$self->_Init( @_ );
-	return $self;
+    my $proto = shift;
+    my $self = bless( {}, ref $proto || $proto );
+    $self->_Init( @_ );
+    return $self;
 }
 
 sub _Init
 {
-	my $self = shift;
-	my %args = ( @_ );
-	$self->{'opt'} = \%args;
+    my $self = shift;
+    my %args = ( @_ );
+    $self->{'opt'} = \%args;
 }
 
 =head2 List
@@ -67,16 +67,16 @@ method too.
 
 sub List
 {
-	my $self = shift;
-	my @files;
-	foreach my $root( @INC ) {
-		my $mask = File::Spec->catdir( $root, qw(RTx Shredder Plugin *.pm) );
-		push @files, glob $mask;
-	}
+    my $self = shift;
+    my @files;
+    foreach my $root( @INC ) {
+        my $mask = File::Spec->catdir( $root, qw(RTx Shredder Plugin *.pm) );
+        push @files, glob $mask;
+    }
 
-	my %res = map { $_ =~ m/([^\\\/]+)\.pm$/; $1 => $_ } reverse @files;
+    my %res = map { $_ =~ m/([^\\\/]+)\.pm$/; $1 => $_ } reverse @files;
 
-	return %res;
+    return %res;
 }
 
 =head2 LoadByName
@@ -96,19 +96,19 @@ is C<false> value.
 
 sub LoadByName
 {
-	my $self = shift;
-	my $plugin = "RTx::Shredder::Plugin::". ( shift || '' );
+    my $self = shift;
+    my $plugin = "RTx::Shredder::Plugin::". ( shift || '' );
 
-	local $@;
-	eval "require $plugin";
-	return( 0, $@ ) if $@;
+    local $@;
+    eval "require $plugin";
+    return( 0, $@ ) if $@;
 
-	my $obj = eval { $plugin->new( @_ ) };
-	return( 0, $@ ) if $@;
-	return( 0, 'constructor returned empty object' ) unless $obj;
+    my $obj = eval { $plugin->new( @_ ) };
+    return( 0, $@ ) if $@;
+    return( 0, 'constructor returned empty object' ) unless $obj;
 
-	$self->Rebless( $obj );
-	return( 1, "successfuly load plugin" );
+    $self->Rebless( $obj );
+    return( 1, "successfuly load plugin" );
 }
 
 =head2 LoadByString
@@ -132,15 +132,15 @@ is C<false>.
 
 sub LoadByString
 {
-	my $self = shift;
-	my ($plugin, $args) = split /=/, ( shift || '' ), 2;
+    my $self = shift;
+    my ($plugin, $args) = split /=/, ( shift || '' ), 2;
 
-	my ($status, $msg) = $self->LoadByName( $plugin, @_ );
-	return( $status, $msg ) unless $status;
+    my ($status, $msg) = $self->LoadByName( $plugin, @_ );
+    return( $status, $msg ) unless $status;
 
     my %args;
     foreach( split /\s*;\s*/, ( $args || '' ) ) {
-	    my( $k,$v ) = split /\s*,\s*/, ( $_ || '' ), 2;
+        my( $k,$v ) = split /\s*,\s*/, ( $_ || '' ), 2;
         unless( $args{$k} ) {
             $args{$k} = $v;
             next;
@@ -150,13 +150,13 @@ sub LoadByString
         push @{ $args{$k} }, $v;
     }
 
-	($status, $msg) = $self->HasSupportForArgs( keys %args );
-	return( $status, $msg ) unless $status;
+    ($status, $msg) = $self->HasSupportForArgs( keys %args );
+    return( $status, $msg ) unless $status;
 
-	($status, $msg) = $self->TestArgs( %args );
-	return( $status, $msg ) unless $status;
+    ($status, $msg) = $self->TestArgs( %args );
+    return( $status, $msg ) unless $status;
 
-	return( 1, "successfuly load plugin" );
+    return( 1, "successfuly load plugin" );
 }
 
 =head2 Rebless
@@ -173,10 +173,10 @@ plugin.
 
 sub Rebless
 {
-	my( $self, $obj ) = @_;
-	bless( $self, ref $obj );
-	%{$self} = %{$obj};
-	return;
+    my( $self, $obj ) = @_;
+    bless( $self, ref $obj );
+    %{$self} = %{$obj};
+    return;
 }
 
 1;

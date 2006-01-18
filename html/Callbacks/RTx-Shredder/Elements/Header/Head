@@ -14,14 +14,14 @@
 <script type="text/javascript">
 function hideElement(node)
 {
-	if( !node || node.nodeType != node.ELEMENT_NODE) return;
+	if( !node || node.nodeType != 1  /* ELEMENT_NODE */ ) return;
 	if( node.className.match( /\bhidden\b/ ) ) return;
 	node.className += (node.className == '')? 'hidden': ' hidden';
 }
 
 function showElement(node)
 {
-	if( !node || node.nodeType != node.ELEMENT_NODE) return;
+	if( !node || node.nodeType != 1 /* ELEMENT_NODE */ ) return;
 	node.className = node.className.replace( /\bhidden\b/, '' );
 }
 
@@ -44,7 +44,7 @@ function walkChildElements(parent, callback)
 
 function showShredderPluginTab( plugin )
 {
-	plugin_tab_id = 'shredder-plugin-'+ plugin +'-tab';
+	var plugin_tab_id = 'shredder-plugin-'+ plugin +'-tab';
 	var root = document.getElementById('shredder-plugin-tabs');
 	walkChildElements( root, function(node) {
 		if( node.id == plugin_tab_id ) {
@@ -59,6 +59,7 @@ function showShredderPluginTab( plugin )
 		hideElement( document.getElementById('shredder-submit-button') );
 	}
 }
+
 function checkAllObjects()
 {
 	var check = document.getElementById('shredder-select-all-objects-checkbox').checked;

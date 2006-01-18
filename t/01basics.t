@@ -21,9 +21,8 @@ $ticket = RT::Ticket->new( $RT::SystemUser );
 my ($status, $msg) = $ticket->Load( $id );
 ok( $id, "load ticket" ) or diag( "error: $msg" );
 
-my $shredder = RTx::Shredder->new();
-$shredder->PutObject( Object => $ticket );
-$shredder->Wipeout();
+my $shredder = shredder_new();
+$shredder->Wipeout( Object => $ticket );
 
 cmp_deeply( dump_current_and_savepoint(), "current DB equal to savepoint");
 

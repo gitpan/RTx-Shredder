@@ -44,10 +44,10 @@ exist.
 =cut
 
 use constant {
-	DEPENDS_ON	=> 0x000001,
-	WIPE_AFTER	=> 0x000010,
-	RELATES		=> 0x000100,
-	VARIABLE	=> 0x001000,
+    DEPENDS_ON    => 0x000001,
+    WIPE_AFTER    => 0x000010,
+    RELATES        => 0x000100,
+    VARIABLE    => 0x001000,
 };
 
 =head1 STATES
@@ -73,23 +73,23 @@ are valid.
 =cut
 
 use constant {
-	ON_STACK	=> 0x00000,
-	FOR_WIPING	=> 0x00001,
-	WIPED		=> 0x00010,
-	VALID		=> 0x00100,
-	INVALID		=> 0x01000,
+    ON_STACK    => 0x00000,
+    IN_WIPING    => 0x00001,
+    WIPED        => 0x00010,
+    VALID        => 0x00100,
+    INVALID        => 0x01000,
 };
 
 our @EXPORT = qw(
-		DEPENDS_ON
-		WIPE_AFTER
-		RELATES
-		VARIABLE
-		ON_STACK
-		FOR_WIPING
-		WIPED
-		VALID
-		INVALID
-		);
+        DEPENDS_ON
+        WIPE_AFTER
+        RELATES
+        VARIABLE
+        ON_STACK
+        IN_WIPING
+        WIPED
+        VALID
+        INVALID
+        );
 
 1;

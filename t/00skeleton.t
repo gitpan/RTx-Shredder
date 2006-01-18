@@ -10,8 +10,14 @@ init_db();
 
 plan tests => 1;
 
-create_savepoint();
-cmp_deeply( dump_current_and_savepoint(), "current DB equal to savepoint");
+create_savepoint('clean'); # backup of the clean RT DB
+my $shredder = shredder_new(); # new shredder object
+
+# ....
+# create and wipe RT objects
+#
+
+cmp_deeply( dump_current_and_savepoint('clean'), "current DB equal to savepoint");
 
 if( is_all_successful() ) {
 	cleanup_tmp();

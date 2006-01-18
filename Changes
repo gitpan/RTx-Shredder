@@ -1,5 +1,19 @@
 Revision history for Perl module RTx::Shredder
 
+v0.03_01
+    * WARN: API changes, see repository logs
+    * doc: new reworked INSTALLation instructions
+    * fea: initial DB transactions support
+    * fix: WebUI JavaScript in Opera and IE didn't work, now it
+           works in Opera and should work in IE (please test and report)
+    * fix: ObjectCFValues was not cleaned absolutly correct
+    * fea: $RT::ShredderStoragePath config option, see `perldoc RTx::Shredder`
+    * doc: API documentation
+    * fea: changes in errors handling code, no more useless stack traces
+
+v0.03
+    * no significant changes against 0.02_03
+
 v0.02_03
     * api: mutliple values for the arguments of the plugins
     * doc: docs in the Plugin class

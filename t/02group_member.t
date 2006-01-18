@@ -42,17 +42,17 @@ plan tests => 22;
 	$members->Limit( FIELD => 'GroupId', VALUE => $cgid );
 	is( $members->Count, 1, "find membership record" );
 	
-	my $shredder = RTx::Shredder->new();
+	my $shredder = shredder_new();
 	$shredder->PutObjects( Objects => $members );
-	$shredder->Wipeout();
+	$shredder->WipeoutAll();
 	cmp_deeply( dump_current_and_savepoint('buadd'), "current DB equal to savepoint");
 	
 	$shredder->PutObjects( Objects => $user );
-	$shredder->Wipeout();
+	$shredder->WipeoutAll();
 	cmp_deeply( dump_current_and_savepoint('bucreate'), "current DB equal to savepoint");
 	
 	$shredder->PutObjects( Objects => [$pgroup, $cgroup] );
-	$shredder->Wipeout();
+	$shredder->WipeoutAll();
 	cmp_deeply( dump_current_and_savepoint('clean'), "current DB equal to savepoint");
 }
 
@@ -86,9 +86,9 @@ plan tests => 22;
 	is( $ticket->Owner, $user->id, "owner successfuly set") or diag( "error: $msg" );
 
 	my $member = $ticket->OwnerGroup->MembersObj->First;
-	my $shredder = RTx::Shredder->new();
+	my $shredder = shredder_new();
 	$shredder->PutObjects( Objects => $member );
-	$shredder->Wipeout();
+	$shredder->WipeoutAll();
 
 	$ticket = RT::Ticket->new( $RT::SystemUser );
 	($status, $msg) = $ticket->Load( $id );

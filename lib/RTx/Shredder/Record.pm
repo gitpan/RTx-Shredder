@@ -13,14 +13,7 @@ Returns string in format ClassName-ObjectId.
 
 =cut
 
-sub _AsString
-{
-	my $self = shift;
-
-	my $res = ref($self) ."-". $self->id;
-
-	return $res;
-}
+sub _AsString { return ref($_[0]) ."-". $_[0]->id }
 
 =head2 _AsInsertQuery
 
@@ -31,248 +24,189 @@ can be used to insert record back into DB after delete.
 
 sub _AsInsertQuery
 {
-	my $self = shift;
+    my $self = shift;
 
-	my $dbh = $RT::Handle->dbh;
+    my $dbh = $RT::Handle->dbh;
 
-	my $res = "INSERT INTO ". $dbh->quote_identifier( $self->Table );
-	my $values = $self->{'values'};
-	$res .= "(". join( ",", map { $dbh->quote_identifier( $_ ) } sort keys %$values ) .")";
-	$res .= " VALUES";
-	$res .= "(". join( ",", map { $dbh->quote( $values->{$_} ) } sort keys %$values ) .")";
-	$res .= ";";
+    my $res = "INSERT INTO ". $dbh->quote_identifier( $self->Table );
+    my $values = $self->{'values'};
+    $res .= "(". join( ",", map { $dbh->quote_identifier( $_ ) } sort keys %$values ) .")";
+    $res .= " VALUES";
+    $res .= "(". join( ",", map { $dbh->quote( $values->{$_} ) } sort keys %$values ) .")";
+    $res .= ";";
 
-	return $res;
+    return $res;
 }
 
+sub BeforeWipeout { return 1 }
+
 =head2 Dependencies
+
+Returns L<RTx::Shredder::Dependencies> object.
 
 =cut
 
 sub Dependencies
 {
-	my $self = shift;
-	my %args = (
-			Shredder => undef,
-			Flags => DEPENDS_ON,
-			@_,
-		   );
+    my $self = shift;
+    my %args = (
+            Shredder => undef,
+            Flags => DEPENDS_ON,
+            @_,
+           );
 
-	unless( $self->id ) {
-		RTx::Shredder::Exception->throw('Object is not loaded');
-	}
+    unless( $self->id ) {
+        RTx::Shredder::Exception->throw('Object is not loaded');
+    }
 
-	my $deps = RTx::Shredder::Dependencies->new();
-	if( $args{'Flags'} & DEPENDS_ON ) {
-		$self->__DependsOn( %args, Dependencies => $deps );
-	}
-	if( $args{'Flags'} & RELATES ) {
-		$self->__Relates( %args, Dependencies => $deps );
-	}
-	return $deps;
+    my $deps = RTx::Shredder::Dependencies->new();
+    if( $args{'Flags'} & DEPENDS_ON ) {
+        $self->__DependsOn( %args, Dependencies => $deps );
+    }
+    if( $args{'Flags'} & RELATES ) {
+        $self->__Relates( %args, Dependencies => $deps );
+    }
+    return $deps;
 }
 
 sub __DependsOn
 {
-	my $self = shift;
-	my %args = (
-			Shredder => undef,
-			Dependencies => undef,
-			@_,
-		   );
-	my $deps = $args{'Dependencies'};
-	my $list = [];
+    my $self = shift;
+    my %args = (
+            Shredder => undef,
+            Dependencies => undef,
+            @_,
+           );
+    my $deps = $args{'Dependencies'};
+    my $list = [];
 
 # Object custom field values
-	my $objs = $self->CustomFieldValues;
-	$objs->{'find_expired_rows'} = 1;
-	push( @$list, $objs );
+    my $objs = $self->CustomFieldValues;
+    $objs->{'find_expired_rows'} = 1;
+    push( @$list, $objs );
 
 # Object attributes
-	$objs = $self->Attributes;
-	push( @$list, $objs );
+    $objs = $self->Attributes;
+    push( @$list, $objs );
 
 # Transactions
-	$objs = RT::Transactions->new( $self->CurrentUser );
-	$objs->Limit( FIELD => 'ObjectType', VALUE => ref $self );
-	$objs->Limit( FIELD => 'ObjectId', VALUE => $self->id );
-	push( @$list, $objs );
+    $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'ObjectType', VALUE => ref $self );
+    $objs->Limit( FIELD => 'ObjectId', VALUE => $self->id );
+    push( @$list, $objs );
 
 # ACE records
-	$objs = RT::ACL->new( $self->CurrentUser );
-	$objs->LimitToObject( $self );
-	push( @$list, $objs );
+    $objs = RT::ACL->new( $self->CurrentUser );
+    $objs->LimitToObject( $self );
+    push( @$list, $objs );
 
-	$deps->_PushDependencies(
-			BaseObj => $self,
-			Flags => DEPENDS_ON,
-			TargetObjs => $list,
-			Shredder => $args{'Shredder'}
-		);
-	return;
+    $deps->_PushDependencies(
+            BaseObject => $self,
+            Flags => DEPENDS_ON,
+            TargetObjects => $list,
+            Shredder => $args{'Shredder'}
+        );
+    return;
 }
 
 sub __Relates
 {
-	my $self = shift;
-	my %args = (
-			Shredder => undef,
-			Dependencies => undef,
-			@_,
-		   );
-	my $deps = $args{'Dependencies'};
-	my $list = [];
+    my $self = shift;
+    my %args = (
+            Shredder => undef,
+            Dependencies => undef,
+            @_,
+           );
+    my $deps = $args{'Dependencies'};
+    my $list = [];
 
-	if( $self->_Accessible( 'Creator', 'read' ) ) {
-		my $obj = RT::Principal->new( $self->CurrentUser );
-		$obj->Load( $self->Creator );
+    if( $self->_Accessible( 'Creator', 'read' ) ) {
+        my $obj = RT::Principal->new( $self->CurrentUser );
+        $obj->Load( $self->Creator );
 
-		if( $obj && defined $obj->id ) {
-			push( @$list, $obj );
-		} else {
-			my $rec = $args{'Shredder'}->GetRecord( Object => $self );
-			$self = $rec->{'Object'};
-			$rec->{'State'} |= INVALID;
-			push @{ $rec->{'Description'} },
-				"Have no related User(Creator) #". $self->Creator ." object";
-		}
-	}
+        if( $obj && defined $obj->id ) {
+            push( @$list, $obj );
+        } else {
+            my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+            $self = $rec->{'Object'};
+            $rec->{'State'} |= INVALID;
+            push @{ $rec->{'Description'} },
+                "Have no related User(Creator) #". $self->Creator ." object";
+        }
+    }
 
-	if( $self->_Accessible( 'LastUpdatedBy', 'read' ) ) {
-		my $obj = RT::Principal->new( $self->CurrentUser );
-		$obj->Load( $self->LastUpdatedBy );
+    if( $self->_Accessible( 'LastUpdatedBy', 'read' ) ) {
+        my $obj = RT::Principal->new( $self->CurrentUser );
+        $obj->Load( $self->LastUpdatedBy );
 
-		if( $obj && defined $obj->id ) {
-			push( @$list, $obj );
-		} else {
-			my $rec = $args{'Shredder'}->GetRecord( Object => $self );
-			$self = $rec->{'Object'};
-			$rec->{'State'} |= INVALID;
-			push @{ $rec->{'Description'} },
-				"Have no related User(LastUpdatedBy) #". $self->LastUpdatedBy ." object";
-		}
-	}
+        if( $obj && defined $obj->id ) {
+            push( @$list, $obj );
+        } else {
+            my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+            $self = $rec->{'Object'};
+            $rec->{'State'} |= INVALID;
+            push @{ $rec->{'Description'} },
+                "Have no related User(LastUpdatedBy) #". $self->LastUpdatedBy ." object";
+        }
+    }
 
-	$deps->_PushDependencies(
-			BaseObj => $self,
-			Flags => RELATES,
-			TargetObjs => $list,
-			Shredder => $args{'Shredder'}
-		);
+    $deps->_PushDependencies(
+            BaseObject => $self,
+            Flags => RELATES,
+            TargetObjects => $list,
+            Shredder => $args{'Shredder'}
+        );
 
-	# cause of this $self->SUPER::__Relates should be called last
-	# in overridden subs
-	my $rec = $args{'Shredder'}->GetRecord( Object => $self );
-	$rec->{'State'} |= VALID unless( $rec->{'State'} & INVALID );
+    # cause of this $self->SUPER::__Relates should be called last
+    # in overridden subs
+    my $rec = $args{'Shredder'}->GetRecord( Object => $self );
+    $rec->{'State'} |= VALID unless( $rec->{'State'} & INVALID );
 
-	return;
-}
-
-=head2 Wipeout
-
-Really delete record from database.
-Returns nothing.
-Arguments
-	Shredder: RTx::Shredder object, is used for object cache. If
-	skipped creates new as temporary storage.
-
-=cut
-
-sub Wipeout
-{
-	my $self = shift;
-	my %args = (
-			Shredder => undef,
-			@_
-		   );
-	unless( $args{'Shredder'} ) {
-		$args{'Shredder'} = new RTx::Shredder();
-	}
-
-	my $rec = $args{'Shredder'}->PutObject( Object => $self );
-	$rec->{'State'} |= FOR_WIPING;
-	return if( $rec->{'State'} & WIPED );
-	$self = $rec->{'Object'};
-
-	$self->_Wipeout( %args );
-
-	return;
-}
-
-sub _Wipeout
-{
-	my $self = shift;
-	my %args = ( @_ );
-
-	my $deps = $self->Dependencies( %args );
-
-	my @variable = $deps->List( WithFlags => VARIABLE );
-	for my $d( @variable ) {
-		$d->ResolveVariable( %args );
-	}
-
-	$deps->Wipeout( WithoutFlags => WIPE_AFTER | VARIABLE, %args );
-	$self->__Wipeout( %args );
-	$deps->Wipeout( WithFlags => WIPE_AFTER,
-			WithoutFlags => VARIABLE,
-			%args,
-		      );
-
-	return;
+    return;
 }
 
 # implement proxy method because some RT classes
 # override Delete method
 sub __Wipeout
 {
-	my $self = shift;
-	my %args = ( @_ );
-	my $msg = $self->_AsString ." deleted";
-	my $insert_query = $self->_AsInsertQuery;
-
-	$self->SUPER::Delete();
-	$args{'Shredder'}->DumpSQL( Query => $insert_query );
-
-	my $rec = $args{'Shredder'}->GetRecord( Object => $self );
-	$rec->{'State'} |= WIPED;
-	delete $rec->{'Object'};
-
-	$RT::Logger->warning( $msg );
-
-	return;
+    my $self = shift;
+    my $msg = $self->_AsString ." wiped out";
+    $self->SUPER::Delete;
+    $RT::Logger->warning( $msg );
+    return;
 }
 
 sub ValidateRelations
 {
-	my $self = shift;
-	my %args = (
-			Shredder => undef,
-			@_
-		   );
-	unless( $args{'Shredder'} ) {
-		$args{'Shredder'} = new RTx::Shredder();
-	}
+    my $self = shift;
+    my %args = (
+            Shredder => undef,
+            @_
+           );
+    unless( $args{'Shredder'} ) {
+        $args{'Shredder'} = new RTx::Shredder();
+    }
 
-	my $rec = $args{'Shredder'}->PutObject( Object => $self );
-	return if( $rec->{'State'} & VALID );
-	$self = $rec->{'Object'};
+    my $rec = $args{'Shredder'}->PutObject( Object => $self );
+    return if( $rec->{'State'} & VALID );
+    $self = $rec->{'Object'};
 
-	$self->_ValidateRelations( %args, Flags => RELATES );
-	$rec->{'State'} |= VALID unless( $rec->{'State'} & INVALID );
+    $self->_ValidateRelations( %args, Flags => RELATES );
+    $rec->{'State'} |= VALID unless( $rec->{'State'} & INVALID );
 
-	return;
+    return;
 }
 
 sub _ValidateRelations
 {
-	my $self = shift;
-	my %args = ( @_ );
+    my $self = shift;
+    my %args = ( @_ );
 
-	my $deps = $self->Dependencies( %args );
+    my $deps = $self->Dependencies( %args );
 
-	$deps->ValidateRelations( %args );
+    $deps->ValidateRelations( %args );
 
-	return;
+    return;
 }
 
 1;

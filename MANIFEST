@@ -15,6 +15,7 @@ html/Admin/Tools/Shredder/index.html
 html/Callbacks/RTx-Shredder/Admin/Elements/ToolTabs/Default
 html/Callbacks/RTx-Shredder/Elements/Header/Head
 html/Callbacks/RTx-Shredder/Search/Results.html/SearchActions
+INSTALL
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Build.pm

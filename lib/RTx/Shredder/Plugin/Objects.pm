@@ -27,37 +27,37 @@ command:
 
 sub SupportArgs
 {
-	return $_[0]->SUPER::SupportArgs, @RTx::Shredder::SUPPORTED_OBJECTS;
+    return $_[0]->SUPER::SupportArgs, @RTx::Shredder::SUPPORTED_OBJECTS;
 }
 
 sub TestArgs
 {
-	my $self = shift;
-	my %args = @_;
+    my $self = shift;
+    my %args = @_;
 
-	my @strings;
-	foreach my $name( @RTx::Shredder::SUPPORTED_OBJECTS ) {
-		next unless $args{$name};
+    my @strings;
+    foreach my $name( @RTx::Shredder::SUPPORTED_OBJECTS ) {
+        next unless $args{$name};
 
-		my $list = $args{$name};
-		$list = [$list] unless UNIVERSAL::isa( $list, 'ARRAY' );
-		push @strings, map "RT::$name\-$_", @$list;
-	}
+        my $list = $args{$name};
+        $list = [$list] unless UNIVERSAL::isa( $list, 'ARRAY' );
+        push @strings, map "RT::$name\-$_", @$list;
+    }
 
-	my @objs = RTx::Shredder->CastObjectsToRecords( Objects => \@strings );
+    my @objs = RTx::Shredder->CastObjectsToRecords( Objects => \@strings );
 
-	my @res = $self->SUPER::TestArgs( %args );
+    my @res = $self->SUPER::TestArgs( %args );
 
-	$self->{'opt'}->{'objects'} = \@objs;
+    $self->{'opt'}->{'objects'} = \@objs;
 
-	return (@res);
+    return (@res);
 }
 
 sub Run
 {
-	my $self = shift;
-	my %args = ( Shredder => undef, @_ );
-	return (1, @{$self->{'opt'}->{'objects'}});
+    my $self = shift;
+    my %args = ( Shredder => undef, @_ );
+    return (1, @{$self->{'opt'}->{'objects'}});
 }
 
 1;

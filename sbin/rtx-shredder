@@ -78,22 +78,38 @@ our %plugins = RTx::Shredder::Plugin->List;
 our %opt;
 parse_args();
 
-unless( $opt{'sqldump'} ) {
-	print STDERR "WARNING: It's strongly recommended to use '--sqldump <filename>' option\n";
-	unless( $opt{'force'} ) {
-		exit(0) unless prompt_yN( "Do you want to proceed?" );
-	}
-} else {
-	# XXX: we should print file name here
+RTx::Shredder::Init( %opt );
+my $shredder = new RTx::Shredder;
+
+{
+    local $@;
+    my ($file, $fh) = eval { $shredder->SetFile( FileName => $opt{'sqldump'}, FromStorage => 0 ) };
+	if( $@ ) {
+        print STDERR "ERROR: Couldn't open SQL dump file: $@\n";
+        exit(1) if $opt{'sqldump'};
+
+        print STDERR "WARNING: It's strongly recommended to use '--sqldump <filename>' option\n";
+        unless( $opt{'force'} ) {
+            exit(0) unless prompt_yN( "Do you want to proceed?" );
+        }
+	} else {
+        print "SQL dump file is '$file'\n";
+    }
 }
 
-RTx::Shredder::Init( %opt );
-my $shredder = new RTx::Shredder( %opt );
 my @objs = process_plugins( $shredder );
 prompt_delete_objs( \@objs ) unless $opt{'force'};
 
 $shredder->PutObjects( Objects => $_ ) foreach @objs;
-$shredder->Wipeout;
+eval { $shredder->WipeoutAll };
+if( $@ ) {
+    require RTx::Shredder::Exceptions;
+    if( my $e = RTx::Shredder::Exception::Info->caught ) {
+        print "\nERROR: $e\n\n";
+        exit 1;
+    }
+    die $@;
+}
 
 sub prompt_delete_objs
 {
@@ -160,26 +176,9 @@ sub parse_args
 	}
 	$tmp = undef;
 	if( GetOptions( 'sqldump=s' => \$tmp ) && $tmp ) {
-		$opt{'sqldump'} = eval { RTx::Shredder->GetFileHandle( $tmp ) };
-		if( $@ ) {
-			print "Couldn't open file for SQL dump\n";
-			print "Error: $@";
-			exit(1);
-		}
-	} else {
-		local $@;
-		$opt{'sqldump'} = eval { RTx::Shredder->GetFileFromStorage };
-		if( $@ ) {
-			print "Couldn't open file for SQL dump\n";
-			print "Error: $@";
-		}
+		$opt{'sqldump'} = $tmp;
 	}
 	return;
-}
-
-sub cast_objects
-{
-	return RTx::Shredder->CastObjectsToRecords( Objects => $_[0] );
 }
 
 sub process_plugins
@@ -211,7 +210,7 @@ sub process_plugins
 		}
 		push @res, @objs;
 	}
-	return cast_objects( \@res );
+	return RTx::Shredder->CastObjectsToRecords( Objects => \@res );
 }
 
 sub show_plugin_list
