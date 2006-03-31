@@ -1,8 +1,6 @@
 package RTx::Shredder::Constants;
 
-require Exporter;
-use vars qw(@ISA);
-@ISA = qw(Exporter);
+use base qw(Exporter);
 
 =head1 NAME
 
