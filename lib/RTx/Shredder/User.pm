@@ -131,4 +131,13 @@ sub __Relates
     return $self->SUPER::__Relates( %args );
 }
 
+sub BeforeWipeout
+{
+    my $self = shift;
+    if( $self->Name =~ /^(RT_System|Nobody)$/ ) {
+        RTx::Shredder::Exception::Info->throw('SystemObject');
+    }
+    return $self->SUPER::BeforeWipeout( @_ );
+}
+
 1;

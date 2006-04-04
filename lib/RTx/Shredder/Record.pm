@@ -6,6 +6,7 @@ use warnings;
 use warnings FATAL => 'redefine';
 
 use RTx::Shredder::Constants;
+use RTx::Shredder::Exceptions;
 
 =head2 _AsString
 

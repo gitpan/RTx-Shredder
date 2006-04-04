@@ -77,7 +77,7 @@ on the objects in the cache and backups storage.
 
 =cut
 
-our $VERSION = '0.03_02';
+our $VERSION = '0.03_03';
 use File::Spec ();
 
 
@@ -89,6 +89,7 @@ BEGIN {
 ### after:     push @INC, qw(@RT_LIB_PATH@);
     push @INC, qw(/opt/rt3/local/lib /opt/rt3/lib);
     use RTx::Shredder::Constants;
+    use RTx::Shredder::Exceptions;
 
     require RT;
 
@@ -229,7 +230,10 @@ sub CastObjectsToRecords
         my $obj = $class->new( $RT::SystemUser );
         die "Couldn't construct new '$class' object" unless $obj;
         $obj->Load( $id );
-        die "Couldn't load '$class' object by id '$id'" unless $obj->id;
+        unless ( $obj->id ) {
+            $RT::Logger->error( "Couldn't load '$class' object with id '$id'" );
+            RTx::Shredder::Exception::Info->throw( 'CouldntLoadObject' );
+        }
         die "Loaded object has different id" unless( $id eq $obj->id );
         push @res, $obj;
     } else {

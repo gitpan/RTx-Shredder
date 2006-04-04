@@ -1,5 +1,9 @@
 Revision history for Perl module RTx::Shredder
 
+v0.03_03
+    * fix: typo in docs
+    * fix: load exceptions class where we use it
+
 v0.03_02
     * fix: on some configurations Shredder WebUI was failing with
            404 (not found) error

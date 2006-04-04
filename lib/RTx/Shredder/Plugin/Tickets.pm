@@ -23,7 +23,7 @@ Search tickets only in particular queue.
 Search tickets with specified status only.
 'deleted' status is also supported.
 
-=head2 update_before - date
+=head2 updated_before - date
 
 Search tickets that were updated before some date.
 Example: '2003-12-31 23:59:59'

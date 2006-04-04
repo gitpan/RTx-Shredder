@@ -17,7 +17,7 @@ unless( $file ) {
 }
 
 use RTx::Shredder::POD qw();
-my $text;
+my $text = '';
 open my $io_handle, ">:scalar", \$text or die "Can't open scalar for write: $!";
 RTx::Shredder::POD::plugin_html( $file, $io_handle );
 close $io_handle;

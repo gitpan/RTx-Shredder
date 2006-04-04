@@ -28,6 +28,14 @@ System object was requested for deletion, shredder couldn't
 do that because system would be unusable than.
 END
 
+    CouldntLoadObject => <<END,
+Shredder couldn't load object. Most probably it's not fatal error.
+May be you've used Objects plugin and asked to delete object that
+doesn't exist in the system. If you think that your request was
+correct and it's problem of the Shredder then you can get full error
+message from RT log files and send bug report.
+END
+
 );
 
 sub full_message {
