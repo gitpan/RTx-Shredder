@@ -1,5 +1,13 @@
 Revision history for Perl module RTx::Shredder
 
+v0.04
+    * fix: RT::Links->Next skip links that point to
+           deleted records, and we were leaving them too
+    * fix: any record may have links, move code into RT::Record
+           from RT::Ticket
+    * fea: delete AddLink transactions when wipe Link
+    * fea: more tests
+
 v0.03_03
     * fix: typo in docs
     * fix: load exceptions class where we use it

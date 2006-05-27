@@ -33,4 +33,4 @@ substitute( { RT_LIB_PATH => $lib_path,
 	       t/utils.pl)
 	  );
 
-&WriteAll;
+WriteAll();

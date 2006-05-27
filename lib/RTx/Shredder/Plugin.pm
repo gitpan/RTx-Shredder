@@ -97,9 +97,10 @@ is C<false> value.
 sub LoadByName
 {
     my $self = shift;
-    my $plugin = "RTx::Shredder::Plugin::". ( shift || '' );
+    my $name = shift or return (0, "Name not specified");
 
     local $@;
+    my $plugin = "RTx::Shredder::Plugin::$name";
     eval "require $plugin";
     return( 0, $@ ) if $@;
 

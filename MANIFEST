@@ -72,5 +72,7 @@ t/01basics.t
 t/01ticket.t
 t/02group_member.t
 t/02user.t
+t/03plugin.t
+t/03plugin_users.t
 t/utils.pl
 Todo

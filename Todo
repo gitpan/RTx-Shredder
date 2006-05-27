@@ -1,8 +1,6 @@
 MAJOR things that should be done in 0.05:
     * sql dumps checker in tests, at list simple test that
       counts INSERTs in file
-
-MAJOR things that should be done in 0.04:
 	* Move delete handler to hook DBIx::SB::Record hook to be sure if some RT
 	  core code delete record behind our back we could catch it. NOTE: if plan
 	  integration into WebUI this hook would be global so we should check if it

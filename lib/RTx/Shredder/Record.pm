@@ -96,6 +96,18 @@ sub __DependsOn
     $objs->Limit( FIELD => 'ObjectId', VALUE => $self->id );
     push( @$list, $objs );
 
+# Links
+    if ( $self->can('_Links') ) {
+        # XXX: We don't use Links->Next as it's dies when object
+        #      is linked to object that doesn't exist
+        #      also, ->Next skip links to deleted tickets :(
+        foreach ( qw(Base Target) ) {
+            my $objs = $self->_Links( $_ );
+            $objs->_DoSearch;
+            push @$list, $objs->ItemsArrayRef;
+        }
+    }
+
 # ACE records
     $objs = RT::ACL->new( $self->CurrentUser );
     $objs->LimitToObject( $self );

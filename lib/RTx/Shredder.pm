@@ -77,7 +77,7 @@ on the objects in the cache and backups storage.
 
 =cut
 
-our $VERSION = '0.03_03';
+our $VERSION = '0.04';
 use File::Spec ();
 
 
@@ -214,6 +214,9 @@ sub CastObjectsToRecords
     }
 
     if( UNIVERSAL::isa( $targets, 'RT::SearchBuilder' ) ) {
+        #XXX: try to use ->_DoSearch + ->ItemsArrayRef in feature
+        #     like we do in Record with links, but change only when
+        #     more tests would be available
         while( my $tmp = $targets->Next ) { push @res, $tmp };
     } elsif ( UNIVERSAL::isa( $targets, 'RT::Record' ) ) {
         push @res, $targets;

@@ -33,19 +33,6 @@ sub __DependsOn
     $objs->Limit( FIELD => 'Instance', VALUE => $self->Id );
     push( @$list, $objs );
 
-# Links
-# Native API calls that select using Ticket's URI
-    push( @$list, $self->_Links( 'Base' ) );
-    push( @$list, $self->_Links( 'Target' ) );
-
-# Indirect lowlevel clean up via Local* fields
-    $objs = RT::Links->new( $self->CurrentUser );
-    $objs->Limit( FIELD => 'LocalBase', VALUE => $self->Id );
-    push( @$list, $objs );
-    $objs = RT::Links->new( $self->CurrentUser );
-    $objs->Limit( FIELD => 'LocalTarget', VALUE => $self->Id );
-    push( @$list, $objs );
-
 #TODO: Users, Queues if we wish export tool
     $deps->_PushDependencies(
             BaseObject => $self,
