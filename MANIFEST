@@ -15,7 +15,6 @@ html/Admin/Tools/Shredder/index.html
 html/Callbacks/RTx-Shredder/Admin/Elements/ToolTabs/Default
 html/Callbacks/RTx-Shredder/Elements/Header/Head
 html/Callbacks/RTx-Shredder/Search/Results.html/SearchActions
-INSTALL
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Build.pm
@@ -27,6 +26,7 @@ inc/Module/Install/RTx.pm
 inc/Module/Install/Substitute.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+INSTALL
 lib/RTx/Shredder.pm
 lib/RTx/Shredder/ACE.pm
 lib/RTx/Shredder/Attachment.pm

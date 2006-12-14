@@ -75,28 +75,45 @@ sub rewrite_rtconfig
 {
 
 	# database
-	$RT::DatabaseType   = 'SQLite';
-	$RT::DatabaseHost   = 'localhost';
-	$RT::DatabaseRTHost = 'localhost';
-	$RT::DatabasePort   = '';
-	$RT::DatabaseUser   = 'rt_user';
-	$RT::DatabasePassword = 'rt_pass';
-	$RT::DatabaseRequireSSL = undef;
-
+	config_set( '$DatabaseType'       , 'SQLite' );
+	config_set( '$DatabaseHost'       , 'localhost' );
+	config_set( '$DatabaseRTHost'     , 'localhost' );
+	config_set( '$DatabasePort'       , '' );
+	config_set( '$DatabaseUser'       , 'rt_user' );
+	config_set( '$DatabasePassword'   , 'rt_pass' );
+	config_set( '$DatabaseRequireSSL' , undef );
 	# database file name
-	$RT::DatabaseName = db_name();
+	config_set( '$DatabaseName'       , db_name() );
 
 	# generic logging
-	$RT::LogToSyslog = undef;
-	$RT::LogToScreen = 'error';
-	$RT::LogStackTraces = '1';
-
+	config_set( '$LogToSyslog'    , undef );
+	config_set( '$LogToScreen'    , 'error' );
+	config_set( '$LogStackTraces' , 1 );
 	# logging to standalone file
-	$RT::LogToFile = 'debug';
-	my $dname = create_tmpdir();
-	my $fname = File::Spec->catfile($dname, test_name() .".log");
-	$RT::LogToFileNamed = $fname;
+	config_set( '$LogToFile'      , 'debug' );
+	my $fname = File::Spec->catfile(create_tmpdir(), test_name() .".log");
+	config_set( '$LogToFileNamed' , $fname );
 }
+
+=head3 config_set
+
+=cut
+
+*config_set = $RT::VERSION =~ /^3.7/? *config_set_new: *config_set_old;
+
+sub config_set_new {
+    my $opt = shift;
+    $opt =~ s/^[\$\%\@]// or warn "no leading sigil";
+    RT->Config->Set($opt, @_)
+}
+
+sub config_set_old
+{
+    my $opt = shift;
+    $opt =~ s/^([\$\%\@])/$1RT::/ or warn "no leading sigil in '$opt'";
+    eval "($opt) = (\@_);1" or warn "couldn't set option: $@";
+}
+
 
 =head2 DATABASES
 
@@ -119,6 +136,8 @@ sub init_db
 	RT::InitLogging();
 	RT::ConnectToDatabase();
 	__init_schema( $RT::Handle->dbh );
+
+    require RT::CurrentUser;
 
 	__insert_initial_data();
 	RT::Init();

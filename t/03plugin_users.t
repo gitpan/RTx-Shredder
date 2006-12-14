@@ -7,9 +7,9 @@ use Test::More;
 use Test::Deep;
 BEGIN { require "t/utils.pl"; }
 
-plan tests => 9;
+plan tests => 8;
 
-my @ARGS = qw(limit status name email replace_relations);
+my @ARGS = qw(limit status name email replace_relations no_tickets);
 
 use_ok('RTx::Shredder::Plugin::Users');
 {
@@ -19,8 +19,6 @@ use_ok('RTx::Shredder::Plugin::Users');
     cmp_deeply(\@args, \@ARGS, "support all args");
     my ($status, $msg) = $plugin->TestArgs( name => 'r??t*' );
     ok($status, "arg name = 'r??t*'") or diag("error: $msg");
-    ($status, $msg) = $plugin->TestArgs( name => '!@#' );
-    ok(!$status, "bad arg name = '!@#'");
     for (qw(any disabled enabled)) {
         my ($status, $msg) = $plugin->TestArgs( status => $_ );
         ok($status, "arg status = '$_'") or diag("error: $msg");

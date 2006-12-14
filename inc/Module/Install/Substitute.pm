@@ -1,8 +1,11 @@
-#line 1 "inc/Module/Install/Substitute.pm - /usr/lib/perl5/site_perl/5.8.6/Module/Install/Substitute.pm"
+#line 1
 package Module::Install::Substitute;
+
+use vars qw(@ISA);
 use Module::Install::Base; @ISA = qw(Module::Install::Base);
 
 use strict;
+use warnings;
 
 $Module::Install::Substitute::VERSION = '0.02';
 
@@ -10,7 +13,7 @@ require File::Temp;
 require File::Spec;
 require Cwd;
 
-#line 15
+#line 64
 
 sub substitute
 {
@@ -26,7 +29,6 @@ sub substitute
 	$self->_parse_options;
 
 	my @file = @_;
-
 	foreach my $f (@file) {
 		$self->_rewrite_file( $f );
 	}
@@ -39,9 +41,9 @@ sub _parse_options
 	my $self = shift;
 	my $cwd = Cwd::getcwd();
 	foreach my $t ( qw(from to) ) {
-		$self->{__option}->{$t} = File::Spec->catdir($self->{__option}->{$t}, $cwd);
-		my $d = ($self->{__option}->{$t});
-		die "Couldn't read directory '$d'" unless( -d $d && -r _ );
+        $self->{__option}->{$t} = $cwd unless $self->{__option}->{$t};
+		my $d = $self->{__option}->{$t};
+		die "Couldn't read directory '$d'" unless -d $d && -r _;
 	}
 }
 

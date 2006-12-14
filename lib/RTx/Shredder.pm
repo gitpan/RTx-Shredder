@@ -77,7 +77,7 @@ on the objects in the cache and backups storage.
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.04_01';
 use File::Spec ();
 
 

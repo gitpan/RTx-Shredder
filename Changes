@@ -1,5 +1,11 @@
 Revision history for Perl module RTx::Shredder
 
+v0.05
+
+    * fea: no_tickets option in Users plugin
+    * fix: no validation of mail and name in Users plugin as
+           it's been broken
+
 v0.04
     * fix: RT::Links->Next skip links that point to
            deleted records, and we were leaving them too
