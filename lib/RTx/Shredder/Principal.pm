@@ -37,6 +37,18 @@ sub __DependsOn
            );
     push( @$list, $objs );
 
+# AddWatcher Transactions
+    $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Type', VALUE => 'AddWatcher' );
+    $objs->Limit( FIELD => 'NewValue', VALUE => $self->id );
+    push( @$list, $objs );
+
+# DelWatcher Transactions
+    $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'Type', VALUE => 'DelWatcher' );
+    $objs->Limit( FIELD => 'OldValue', VALUE => $self->id );
+    push( @$list, $objs );
+
     $deps->_PushDependencies(
             BaseObject => $self,
             Flags => DEPENDS_ON,

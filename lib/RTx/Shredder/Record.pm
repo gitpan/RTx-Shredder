@@ -96,6 +96,16 @@ sub __DependsOn
     $objs->Limit( FIELD => 'ObjectId', VALUE => $self->id );
     push( @$list, $objs );
 
+# Transactions that refer to this object
+    $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'ReferenceType', VALUE => ref $self );
+    $objs->Limit( FIELD => 'OldReference', VALUE => $self->id );
+    push( @$list, $objs );
+    $objs = RT::Transactions->new( $self->CurrentUser );
+    $objs->Limit( FIELD => 'ReferenceType', VALUE => ref $self );
+    $objs->Limit( FIELD => 'NewReference', VALUE => $self->id );
+    push( @$list, $objs );
+
 # Links
     if ( $self->can('_Links') ) {
         # XXX: We don't use Links->Next as it's dies when object

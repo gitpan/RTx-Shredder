@@ -60,7 +60,6 @@ lib/RTx/Shredder/Transaction.pm
 lib/RTx/Shredder/User.pm
 Makefile.PL
 MANIFEST
-MANIFEST.SKIP
 META.yml
 patches/3.4.0,1-search_deleted.patch
 README
@@ -71,6 +70,8 @@ t/00skeleton.t
 t/01basics.t
 t/01ticket.t
 t/02group_member.t
+t/02queue.t
+t/02template.t
 t/02user.t
 t/03plugin.t
 t/03plugin_users.t

@@ -1,10 +1,16 @@
 Revision history for Perl module RTx::Shredder
 
 v0.05
-
     * fea: no_tickets option in Users plugin
     * fix: no validation of mail and name in Users plugin as
            it's been broken
+    * fix: there was typo in the Users plugin
+    * fix: delete scrips with queues
+    * fix: with a template delete scrips using it
+    * fix: delete txns that refer to the current record with
+           ReferenceType, OldReference and NewReference fields
+    * fix: delete {Add,Del}Watcher transactions with principals
+    * fea: more tests
 
 v0.04
     * fix: RT::Links->Next skip links that point to

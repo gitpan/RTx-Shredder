@@ -62,7 +62,7 @@ from bugs in shredder code, but sometimes when you have big mail loops
 you may hit it. You can change default value, in
 F<RT_SiteConfig.pm> add C<Set( $DependenciesLimit, new_limit );>
 
-=head2 $RT::ShredderStoragePath
+=head2 $ShredderStoragePath
 
 By default shredder saves dumps in F</path-to-RT-var-dir/data/RTx-Shredder>,
 with this option you can change path, but B<note> that value should be absolute
@@ -77,7 +77,7 @@ on the objects in the cache and backups storage.
 
 =cut
 
-our $VERSION = '0.04_01';
+our $VERSION = '0.05';
 use File::Spec ();
 
 
@@ -214,10 +214,9 @@ sub CastObjectsToRecords
     }
 
     if( UNIVERSAL::isa( $targets, 'RT::SearchBuilder' ) ) {
-        #XXX: try to use ->_DoSearch + ->ItemsArrayRef in feature
-        #     like we do in Record with links, but change only when
-        #     more tests would be available
-        while( my $tmp = $targets->Next ) { push @res, $tmp };
+        $targets->_DoSearch;
+        push @res, @{$targets->ItemsArrayRef || []};
+        #while( my $tmp = $targets->SUPER::Next ) { push @res, $tmp };
     } elsif ( UNIVERSAL::isa( $targets, 'RT::Record' ) ) {
         push @res, $targets;
     } elsif ( UNIVERSAL::isa( $targets, 'ARRAY' ) ) {
