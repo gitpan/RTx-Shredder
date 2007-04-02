@@ -1,5 +1,12 @@
 Revision history for Perl module RTx::Shredder
 
+v0.06
+    Thanks to Philip Kime and Konstantin Naryzhniy for bug
+    reports and a lot of helpful debug information.
+    * fix: in the previouse version a regression was introduced
+           that caused terrible slowdown during tickets deletion.
+    * doc: added section about database indexes
+
 v0.05
     * fea: no_tickets option in Users plugin
     * fix: no validation of mail and name in Users plugin as

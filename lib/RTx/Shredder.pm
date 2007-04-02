@@ -77,7 +77,7 @@ on the objects in the cache and backups storage.
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 use File::Spec ();
 
 
@@ -214,7 +214,9 @@ sub CastObjectsToRecords
     }
 
     if( UNIVERSAL::isa( $targets, 'RT::SearchBuilder' ) ) {
-        $targets->_DoSearch;
+        # XXX: don't uncomment next line as it leads to terrible slowdown
+        # due to select * from Tickets;
+        #$targets->_DoSearch;
         push @res, @{$targets->ItemsArrayRef || []};
         #while( my $tmp = $targets->SUPER::Next ) { push @res, $tmp };
     } elsif ( UNIVERSAL::isa( $targets, 'RT::Record' ) ) {
@@ -626,6 +628,24 @@ sub DumpSQL
 __END__
 
 =head1 NOTES
+
+=head2 Database indexes
+
+To speed up shredding you can add several indexes to your DB.
+
+    CREATE INDEX SHREDDER_CGM1 ON CachedGroupMembers(MemberId, GroupId, Disabled);
+    CREATE INDEX SHREDDER_CGM2 ON CachedGroupMembers(ImmediateParentId, MemberId);
+
+    CREATE UNIQUE INDEX SHREDDER_GM1 ON GroupMembers(MemberId, GroupId);
+
+    CREATE INDEX SHREDDER_TXN1 ON Transactions(ReferenceType, OldReference);
+    CREATE INDEX SHREDDER_TXN2 ON Transactions(ReferenceType, NewReference);
+    CREATE INDEX SHREDDER_TXN3 ON Transactions(Type, OldValue);
+    CREATE INDEX SHREDDER_TXN4 ON Transactions(Type, NewValue);
+
+If shredding is slow anyway then you have to get list of slow queries, for example
+mysql has special options to turn on log of slow queries, queries that takes
+more than one second can be considered as slow, then send the log to the L</AUTHOR>.
 
 =head2 Database transactions support
 
