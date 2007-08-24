@@ -1,4 +1,3 @@
-use lib qw(.);
 use inc::Module::Install;
 
 $ENV{'WITH_SUBDIRS'} = 'sbin,lib,html';
@@ -10,7 +9,7 @@ requires		('RT', 3.4);
 
 requires		('DBIx::SearchBuilder', 1.31);
 requires		('Getopt::Long');
-requires		('Exception::Class');
+requires		('Exception::Class', 1.23);
 
 build_requires		('DBD::SQLite');
 build_requires		('Test::More');

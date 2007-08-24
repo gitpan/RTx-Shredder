@@ -1,5 +1,9 @@
 Revision history for Perl module RTx::Shredder
 
+v0.07
+    * fix: update requirement for module Exception::Class,
+           we need version 1.23.
+
 v0.06
     Thanks to Philip Kime and Konstantin Naryzhniy for bug
     reports and a lot of helpful debug information.
