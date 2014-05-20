@@ -1,11 +1,12 @@
 use inc::Module::Install;
 
 $ENV{'WITH_SUBDIRS'} = 'sbin,lib,html';
-RTx			('Shredder');
+RTx			('RTx-Shredder');
 author			('Ruslan U. Zakirov <Ruslan.Zakirov@gmail.com>');
 license			('perl');
+readme_from ('lib/RTx/Shredder.pm');
 
-requires		('RT', 3.4);
+rt_too_new('3.8.0');
 
 requires		('DBIx::SearchBuilder', 1.31);
 requires		('Getopt::Long');
@@ -31,5 +32,27 @@ substitute( { RT_LIB_PATH => $lib_path,
 	       lib/RTx/Shredder.pm
 	       t/utils.pl)
 	  );
+
+no_index( package =>
+'RT::ACE',
+'RT::CachedGroupMember',
+'RT::Attachment',
+'RT::CustomFieldValue',
+'RT::CustomField',
+'RT::Group',
+'RT::GroupMember',
+'RT::ObjectCustomFieldValue',
+'RT::Link',
+'RT::Principal',
+'RT::Queue',
+'RT::Record',
+'RT::Scrip',
+'RT::ScripAction',
+'RT::ScripCondition',
+'RT::Template',
+'RT::Ticket',
+'RT::Transaction',
+'RT::User',
+);
 
 WriteAll();

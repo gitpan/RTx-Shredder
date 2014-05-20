@@ -28,7 +28,7 @@ use strict;
 use Getopt::Long;
 
 ### after: use lib qw(@RT_LIB_PATH@);
-use lib qw(/opt/rt3/local/lib /opt/rt3/lib);
+use lib qw(/Users/falcone/work/rt/3.8/local/lib /Users/falcone/work/rt/3.8/lib);
 
 use RTx::Shredder;
 use RTx::Shredder::Constants;

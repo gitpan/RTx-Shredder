@@ -4,9 +4,16 @@ use warnings;
 
 =head1 NAME
 
-RTx::Shredder - Cleanup RT database
+RTx::Shredder - DEPRECATED Cleanup RT database
 
 =head1 SYNOPSIS
+
+RTx::Shredder has been part of the RT core since RT 3.8.0 was released
+in 2008.  Do not attempt to install or make use of this extension on a modern
+release of RT, it will not work and may well corrupt your database.
+
+Read more about the core version of
+L<http://bestpractical.com/docs/rt/latest/rt-shredder.html|RT::Shredder>
 
 =head2 CLI
 
@@ -77,7 +84,7 @@ on the objects in the cache and backups storage.
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 use File::Spec ();
 
 
@@ -87,7 +94,7 @@ BEGIN {
 # RT lib path
 
 ### after:     push @INC, qw(@RT_LIB_PATH@);
-    push @INC, qw(/opt/rt3/local/lib /opt/rt3/lib);
+    push @INC, qw(/Users/falcone/work/rt/3.8/local/lib /Users/falcone/work/rt/3.8/lib);
     use RTx::Shredder::Constants;
     use RTx::Shredder::Exceptions;
 

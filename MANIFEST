@@ -17,11 +17,11 @@ html/Callbacks/RTx-Shredder/Elements/Header/Head
 html/Callbacks/RTx-Shredder/Search/Results.html/SearchActions
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
-inc/Module/Install/Build.pm
 inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/ReadmeFromPod.pm
 inc/Module/Install/RTx.pm
 inc/Module/Install/Substitute.pm
 inc/Module/Install/Win32.pm

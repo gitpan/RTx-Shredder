@@ -10,7 +10,7 @@ require Cwd;
 
 BEGIN {
 ### after: 	push @INC, qw(@RT_LIB_PATH@);
-	push @INC, qw(/opt/rt3/local/lib /opt/rt3/lib);
+	push @INC, qw(/Users/falcone/work/rt/3.8/local/lib /Users/falcone/work/rt/3.8/lib);
 }
 use RTx::Shredder;
 
